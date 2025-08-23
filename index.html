@@ -176,6 +176,55 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Action Buttons */
 .action-buttons .btn { margin-right: 5px; margin-bottom: 5px; }
+
+/* Enhanced UI Elements */
+.search-box { background: var(--darker); border: 1px solid var(--card-border); color: var(--text-light); border-radius: 8px; padding: 8px 15px; }
+.search-box:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(110, 0, 255, 0.2); }
+
+.filter-select { background: var(--darker); border: 1px solid var(--card-border); color: var(--text-light); border-radius: 8px; padding: 8px 15px; }
+.filter-select:focus { outline: none; border-color: var(--primary); }
+
+.pagination { margin-bottom: 0; }
+.page-link { background: var(--darker); border: 1px solid var(--card-border); color: var(--text-light); }
+.page-link:hover { background: var(--primary); color: white; border-color: var(--primary); }
+.page-item.active .page-link { background: var(--primary); border-color: var(--primary); }
+
+.loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: var(--accent); animation: spin 1s ease-in-out infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Modal Enhancements */
+.modal-content { background: var(--card-bg); color: var(--text-light); border: 1px solid var(--primary); border-radius: 12px; }
+.modal-header { border-bottom: 1px solid var(--card-border); }
+.modal-footer { border-top: 1px solid var(--card-border); }
+.modal-title { font-family: 'Orbitron', sans-serif; }
+.form-control, .form-select { background: var(--darker); border: 1px solid var(--card-border); color: var(--text-light); }
+.form-control:focus, .form-select:focus { background: var(--darker); border-color: var(--primary); color: var(--text-light); box-shadow: 0 0 0 2px rgba(110, 0, 255, 0.2); }
+.form-label { color: var(--text-muted); font-weight: 500; }
+
+/* Dashboard Enhancements */
+.dashboard-section { margin-bottom: 30px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.section-title { margin: 0; }
+.section-controls { display: flex; gap: 10px; }
+
+/* Status Indicators */
+.status-indicator { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+.status-online { background: var(--notification-success); }
+.status-offline { background: var(--text-muted); }
+.status-busy { background: var(--notification-warning); }
+
+/* Animation Enhancements */
+.fade-in { animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.slide-in { animation: slideIn 0.3s ease-out; }
+@keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--darker); }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--secondary); }
 </style>
 </head>
 <body>
@@ -231,8 +280,20 @@ h1, h2, h3, h4, h5, h6 {
   </div>
 
   <!-- USERS -->
-  <div class="card" id="users-section">
-    <div class="card-header"><h4 class="mb-0"><i class="fas fa-users icon"></i> All Users</h4></div>
+  <div class="card dashboard-section" id="users-section">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="fas fa-users icon"></i> All Users</h4>
+      <div class="section-controls">
+        <input type="text" class="search-box" id="user-search" placeholder="Search users...">
+        <select class="filter-select" id="user-filter">
+          <option value="all">All Users</option>
+          <option value="player">Players</option>
+          <option value="organizer">Organizers</option>
+          <option value="banned">Banned</option>
+          <option value="verified">Verified</option>
+        </select>
+      </div>
+    </div>
     <div class="card-body">
       <ul class="nav nav-tabs" id="usersTab" role="tablist">
         <li class="nav-item" role="presentation"><button class="nav-link active" id="players-tab" data-bs-toggle="tab" data-bs-target="#players" type="button" role="tab">Players</button></li>
@@ -246,6 +307,9 @@ h1, h2, h3, h4, h5, h6 {
               <tbody id="players-body"></tbody>
             </table>
           </div>
+          <nav aria-label="Players pagination">
+            <ul class="pagination justify-content-center" id="players-pagination"></ul>
+          </nav>
         </div>
         <div class="tab-pane fade" id="organizers" role="tabpanel">
           <div class="table-responsive">
@@ -254,14 +318,28 @@ h1, h2, h3, h4, h5, h6 {
               <tbody id="organizers-body"></tbody>
             </table>
           </div>
+          <nav aria-label="Organizers pagination">
+            <ul class="pagination justify-content-center" id="organizers-pagination"></ul>
+          </nav>
         </div>
       </div>
     </div>
   </div>
 
   <!-- DEPOSITS -->
-  <div class="card mt-4" id="deposits-section">
-    <div class="card-header"><h4 class="mb-0"><i class="fas fa-money-bill-wave icon"></i> Player Deposit Requests</h4></div>
+  <div class="card mt-4 dashboard-section" id="deposits-section">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="fas fa-money-bill-wave icon"></i> Player Deposit Requests</h4>
+      <div class="section-controls">
+        <input type="text" class="search-box" id="deposit-search" placeholder="Search deposits...">
+        <select class="filter-select" id="deposit-filter">
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+    </div>
     <div class="card-body">
       <div class="table-responsive">
         <table class="table table-hover">
@@ -269,12 +347,26 @@ h1, h2, h3, h4, h5, h6 {
           <tbody id="balance-req-body"></tbody>
         </table>
       </div>
+      <nav aria-label="Deposits pagination">
+        <ul class="pagination justify-content-center" id="deposits-pagination"></ul>
+      </nav>
     </div>
   </div>
 
   <!-- WITHDRAWALS (Players + Organizers) -->
-  <div class="card mt-4" id="withdrawals-section">
-    <div class="card-header"><h4 class="mb-0"><i class="fas fa-hand-holding-usd icon"></i> Withdraw Requests (Players & Organizers)</h4></div>
+  <div class="card mt-4 dashboard-section" id="withdrawals-section">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="fas fa-hand-holding-usd icon"></i> Withdraw Requests (Players & Organizers)</h4>
+      <div class="section-controls">
+        <input type="text" class="search-box" id="withdraw-search" placeholder="Search withdrawals...">
+        <select class="filter-select" id="withdraw-filter">
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+    </div>
     <div class="card-body">
       <div class="table-responsive">
         <table class="table table-hover">
@@ -286,12 +378,27 @@ h1, h2, h3, h4, h5, h6 {
           <tbody id="withdraw-req-body"></tbody>
         </table>
       </div>
+      <nav aria-label="Withdrawals pagination">
+        <ul class="pagination justify-content-center" id="withdrawals-pagination"></ul>
+      </nav>
     </div>
   </div>
 
   <!-- TOURNAMENTS -->
-  <div class="card mt-4" id="tournaments-section">
-    <div class="card-header"><h4 class="mb-0"><i class="fas fa-trophy icon"></i> All Tournaments</h4></div>
+  <div class="card mt-4 dashboard-section" id="tournaments-section">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="fas fa-trophy icon"></i> All Tournaments</h4>
+      <div class="section-controls">
+        <input type="text" class="search-box" id="tournament-search" placeholder="Search tournaments...">
+        <select class="filter-select" id="tournament-filter">
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="completed">Completed</option>
+        </select>
+      </div>
+    </div>
     <div class="card-body">
       <div class="table-responsive">
         <table class="table table-hover">
@@ -299,11 +406,14 @@ h1, h2, h3, h4, h5, h6 {
           <tbody id="tournaments-body"></tbody>
         </table>
       </div>
+      <nav aria-label="Tournaments pagination">
+        <ul class="pagination justify-content-center" id="tournaments-pagination"></ul>
+      </nav>
     </div>
   </div>
 
   <!-- ANALYTICS (Charts) -->
-  <div class="card mt-4" id="analytics-section">
+  <div class="card mt-4 dashboard-section" id="analytics-section">
     <div class="card-header"><h4 class="mb-0"><i class="fas fa-chart-line icon"></i> Analytics</h4></div>
     <div class="card-body">
       <div class="row g-4">
@@ -315,13 +425,32 @@ h1, h2, h3, h4, h5, h6 {
           <h6 class="text-muted">Role Distribution</h6>
           <canvas id="rolesChart" height="200"></canvas>
         </div>
+        <div class="col-md-6">
+          <h6 class="text-muted">Financial Overview</h6>
+          <canvas id="financialChart" height="200"></canvas>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-muted">Tournament Status</h6>
+          <canvas id="tournamentStatusChart" height="200"></canvas>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- ADMIN ACTIVITY -->
-  <div class="card mt-4" id="activity-section">
-    <div class="card-header"><h4 class="mb-0"><i class="fas fa-list-check icon"></i> Admin Activity</h4></div>
+  <div class="card mt-4 dashboard-section" id="activity-section">
+    <div class="card-header d-flex justify-content-between align-items-center">
+      <h4 class="mb-0"><i class="fas fa-list-check icon"></i> Admin Activity</h4>
+      <div class="section-controls">
+        <select class="filter-select" id="activity-filter">
+          <option value="all">All Actions</option>
+          <option value="login">Logins</option>
+          <option value="ban">Bans</option>
+          <option value="approve">Approvals</option>
+          <option value="reject">Rejections</option>
+        </select>
+      </div>
+    </div>
     <div class="card-body">
       <div class="table-responsive">
         <table class="table table-hover">
@@ -329,6 +458,9 @@ h1, h2, h3, h4, h5, h6 {
           <tbody id="activity-body"></tbody>
         </table>
       </div>
+      <nav aria-label="Activity pagination">
+        <ul class="pagination justify-content-center" id="activity-pagination"></ul>
+      </nav>
     </div>
   </div>
 
@@ -338,31 +470,99 @@ h1, h2, h3, h4, h5, h6 {
 <div class="modal fade" id="editTournamentModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header"><h5 class="modal-title">Edit Tournament</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Tournament</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
       <div class="modal-body">
         <form id="edit-tournament-form">
           <input type="hidden" id="edit-tournament-id">
           <div class="row">
-            <div class="col-md-6 mb-3"><label for="edit-tournament-name" class="form-label">Tournament Name</label><input type="text" class="form-control" id="edit-tournament-name" required></div>
-            <div class="col-md-6 mb-3"><label for="edit-tournament-fee" class="form-label">Entry Fee</label><input type="number" class="form-control" id="edit-tournament-fee" required></div>
+            <div class="col-md-6 mb-3">
+              <label for="edit-tournament-name" class="form-label">Tournament Name</label>
+              <input type="text" class="form-control" id="edit-tournament-name" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="edit-tournament-fee" class="form-label">Entry Fee</label>
+              <input type="number" class="form-control" id="edit-tournament-fee" required>
+            </div>
           </div>
           <div class="row">
-            <div class="col-md-6 mb-3"><label for="edit-tournament-prize" class="form-label">Prize Pool</label><input type="text" class="form-control" id="edit-tournament-prize" required></div>
-            <div class="col-md-6 mb-3"><label for="edit-tournament-status" class="form-label">Status</label>
+            <div class="col-md-6 mb-3">
+              <label for="edit-tournament-prize" class="form-label">Prize Pool</label>
+              <input type="text" class="form-control" id="edit-tournament-prize" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="edit-tournament-status" class="form-label">Status</label>
               <select class="form-select" id="edit-tournament-status" required>
-                <option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+                <option value="completed">Completed</option>
               </select>
             </div>
           </div>
           <div class="row">
-            <div class="col-md-6 mb-3"><label for="edit-tournament-date" class="form-label">Date</label><input type="date" class="form-control" id="edit-tournament-date" required></div>
-            <div class="col-md-6 mb-3"><label for="edit-tournament-time" class="form-label">Time</label><input type="time" class="form-control" id="edit-tournament-time" required></div>
+            <div class="col-md-6 mb-3">
+              <label for="edit-tournament-date" class="form-label">Date</label>
+              <input type="date" class="form-control" id="edit-tournament-date" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="edit-tournament-time" class="form-label">Time</label>
+              <input type="time" class="form-control" id="edit-tournament-time" required>
+            </div>
           </div>
-          <div class="mb-3"><label for="edit-tournament-desc" class="form-label">Description</label><textarea class="form-control" id="edit-tournament-desc" rows="3" required></textarea></div>
-          <div class="mb-3"><label for="edit-tournament-rules" class="form-label">Rules</label><textarea class="form-control" id="edit-tournament-rules" rows="3" required></textarea></div>
+          <div class="mb-3">
+            <label for="edit-tournament-desc" class="form-label">Description</label>
+            <textarea class="form-control" id="edit-tournament-desc" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="edit-tournament-rules" class="form-label">Rules</label>
+            <textarea class="form-control" id="edit-tournament-rules" rows="3" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="edit-tournament-max-participants" class="form-label">Max Participants</label>
+            <input type="number" class="form-control" id="edit-tournament-max-participants" required>
+          </div>
+          <div class="mb-3">
+            <label for="edit-tournament-game-mode" class="form-label">Game Mode</label>
+            <input type="text" class="form-control" id="edit-tournament-game-mode" required>
+          </div>
         </form>
       </div>
-      <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button><button type="button" class="btn btn-brand" id="btn-update-tournament">Update Tournament</button></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-brand" id="btn-update-tournament">Update Tournament</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Balance Modal -->
+<div class="modal fade" id="addBalanceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Balance</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="add-balance-form">
+          <input type="hidden" id="add-balance-user-id">
+          <div class="mb-3">
+            <label for="add-balance-amount" class="form-label">Amount</label>
+            <input type="number" class="form-control" id="add-balance-amount" required>
+          </div>
+          <div class="mb-3">
+            <label for="add-balance-reason" class="form-label">Reason (Optional)</label>
+            <input type="text" class="form-control" id="add-balance-reason">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-brand" id="btn-add-balance">Add Balance</button>
+      </div>
     </div>
   </div>
 </div>
@@ -402,15 +602,23 @@ const adminContent = document.getElementById('admin-content');
 const btnLogout = document.getElementById('btn-logout');
 const notificationContainer = document.getElementById('notification-container');
 const editTournamentModal = new bootstrap.Modal(document.getElementById('editTournamentModal'));
+const addBalanceModal = new bootstrap.Modal(document.getElementById('addBalanceModal'));
 const btnUpdateTournament = document.getElementById('btn-update-tournament');
+const btnAddBalance = document.getElementById('btn-add-balance');
 
 // Local users cache for quick lookup
 let usersCache = {};
-db.ref('users').on('value', snap => { usersCache = snap.val() || {}; });
+let tournamentsCache = {};
+let paymentRequestsCache = {};
 
 // Charts
 let countsChart = null;
 let rolesChart = null;
+let financialChart = null;
+let tournamentStatusChart = null;
+
+// Pagination settings
+const ITEMS_PER_PAGE = 10;
 
 // Helpers
 function logActivity(action, details) {
@@ -490,338 +698,593 @@ document.querySelectorAll('.nav-link').forEach(link => {
 
 // Data loaders
 function loadAllData() {
-  loadPlayers();
-  loadOrganizers();
-  loadBalanceRequests();
-  loadWithdrawRequests();
-  loadTournaments();
-  loadStats();
+  // Load users data
+  db.ref('users').on('value', snap => {
+    usersCache = snap.val() || {};
+    loadPlayers();
+    loadOrganizers();
+    loadStats();
+  });
+  
+  // Load payment requests
+  db.ref('paymentRequests').on('value', snap => {
+    paymentRequestsCache = snap.val() || {};
+    loadBalanceRequests();
+    loadWithdrawRequests();
+  });
+  
+  // Load tournaments
+  db.ref('tournaments').on('value', snap => {
+    tournamentsCache = snap.val() || {};
+    loadTournaments();
+    loadStats();
+  });
 }
 
 // Stats
 function loadStats() {
-  db.ref('users').on('value', snap => {
-    const users = snap.val() || {};
-    document.getElementById('total-users').textContent = Object.keys(users).length;
+  // Total users
+  document.getElementById('total-users').textContent = Object.keys(usersCache).length;
+  
+  // Pending deposits
+  let pendingDeposits = 0;
+  Object.values(paymentRequestsCache).forEach(req => { 
+    if (req.type === 'deposit' && req.status === 'pending') pendingDeposits++; 
   });
-  db.ref('paymentRequests').orderByChild('type').equalTo('deposit').on('value', snap => {
-    const requests = snap.val() || {};
-    let pendingCount = 0;
-    Object.values(requests).forEach(req => { if (req.status === 'pending') pendingCount++; });
-    document.getElementById('total-deposits').textContent = pendingCount;
+  document.getElementById('total-deposits').textContent = pendingDeposits;
+  
+  // Pending withdrawals
+  let pendingWithdrawals = 0;
+  Object.values(paymentRequestsCache).forEach(req => { 
+    if (req.type === 'withdraw' && req.status === 'pending') pendingWithdrawals++; 
   });
-  db.ref('paymentRequests').orderByChild('type').equalTo('withdraw').on('value', snap => {
-    const requests = snap.val() || {};
-    let pendingCount = 0;
-    Object.values(requests).forEach(req => { if (req.status === 'pending') pendingCount++; });
-    document.getElementById('total-withdrawals').textContent = pendingCount;
+  document.getElementById('total-withdrawals').textContent = pendingWithdrawals;
+  
+  // Pending tournaments
+  let pendingTournaments = 0;
+  Object.values(tournamentsCache).forEach(t => { 
+    if (t.status === 'pending') pendingTournaments++; 
   });
-  db.ref('tournaments').orderByChild('status').equalTo('pending').on('value', snap => {
-    const tournaments = snap.val() || {};
-    document.getElementById('total-tournaments').textContent = Object.keys(tournaments).length;
-  });
+  document.getElementById('total-tournaments').textContent = pendingTournaments;
 }
 
 // Users: players
 function loadPlayers() {
-  db.ref('users').orderByChild('role').equalTo('player').on('value', snap => {
-    const players = snap.val() || {};
-    const body = document.getElementById('players-body');
-    body.innerHTML = '';
-    Object.entries(players).forEach(([uid, player]) => {
-      const tr = document.createElement('tr');
-      const statusBadge = player.ban ? '<span class="badge badge-pill badge-banned">Banned</span>' : '<span class="badge badge-pill" style="background: rgba(255,255,255,0.1);">Active</span>';
-      tr.innerHTML = `
-        <td>${player.name || '-'}</td>
-        <td>${player.email || '-'}</td>
-        <td><span class="badge badge-pill" style="background: rgba(255, 193, 7, 0.2); color:#ffc107;">${player.referralCount || 0} Referrals</span></td>
-        <td>৳${player.wallet || 0}</td>
-        <td>${statusBadge}</td>
-        <td class="action-buttons">
-          <button class="btn btn-sm btn-brand ban-btn" data-uid="${uid}" data-ban="${player.ban || false}">${player.ban ? '<i class="fas fa-unlock me-1"></i> Unban' : '<i class="fas fa-ban me-1"></i> Ban'}</button>
-          <button class="btn btn-sm btn-accent ms-1 add-balance-btn" data-uid="${uid}"><i class="fas fa-plus me-1"></i> Add Balance</button>
-        </td>
-      `;
-      body.appendChild(tr);
-      tr.querySelector('.ban-btn').addEventListener('click', function() {
-        const isBanned = this.getAttribute('data-ban') === 'true';
-        db.ref(`users/${uid}/ban`).set(!isBanned).then(() => {
-          showNotification(isBanned ? 'Player Unbanned' : 'Player Banned', `${player.name || 'Player'} has been ${isBanned ? 'unbanned' : 'banned'}`, isBanned ? 'success' : 'warning');
-          logActivity(!isBanned ? 'ban_user' : 'unban_user', `${player.name || 'Player'} (${uid}) ${!isBanned ? 'banned' : 'unbanned'}`);
-          if (!isBanned) {
-            const nid = Date.now();
-            db.ref(`userNotifications/${uid}/${nid}`).set({ title:'Account Status Update', message:'Your account has been banned by admin. Please contact support.', type:'important', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
-          }
+  const players = Object.entries(usersCache).filter(([uid, user]) => user.role === 'player');
+  const body = document.getElementById('players-body');
+  body.innerHTML = '';
+  
+  players.forEach(([uid, player]) => {
+    const tr = document.createElement('tr');
+    const statusBadge = player.ban ? 
+      '<span class="badge badge-pill badge-banned">Banned</span>' : 
+      '<span class="badge badge-pill" style="background: rgba(255,255,255,0.1);">Active</span>';
+    
+    tr.innerHTML = `
+      <td>${player.name || '-'}</td>
+      <td>${player.email || '-'}</td>
+      <td><span class="badge badge-pill" style="background: rgba(255, 193, 7, 0.2); color:#ffc107;">${player.referralCount || 0} Referrals</span></td>
+      <td>৳${player.wallet || 0}</td>
+      <td>${statusBadge}</td>
+      <td class="action-buttons">
+        <button class="btn btn-sm btn-brand ban-btn" data-uid="${uid}" data-ban="${player.ban || false}">${player.ban ? '<i class="fas fa-unlock me-1"></i> Unban' : '<i class="fas fa-ban me-1"></i> Ban'}</button>
+        <button class="btn btn-sm btn-accent ms-1 add-balance-btn" data-uid="${uid}" data-name="${player.name || 'User'}"><i class="fas fa-plus me-1"></i> Add Balance</button>
+      </td>
+    `;
+    body.appendChild(tr);
+    
+    // Ban/Unban functionality
+    tr.querySelector('.ban-btn').addEventListener('click', function() {
+      const isBanned = this.getAttribute('data-ban') === 'true';
+      const userName = player.name || 'User';
+      
+      if (isBanned) {
+        // Unban user
+        db.ref(`users/${uid}/ban`).set(false).then(() => {
+          showNotification('Player Unbanned', `${userName} has been unbanned`, 'success');
+          logActivity('unban_user', `${userName} (${uid}) unbanned`);
         }).catch(err => showNotification('Error', err.message, 'error'));
-      });
-      tr.querySelector('.add-balance-btn').addEventListener('click', function() {
-        const amount = prompt(`Enter amount to add to ${player.name || 'player'}'s wallet:`);
-        if (amount && !isNaN(amount) && parseFloat(amount) > 0) {
-          const amountNum = parseFloat(amount);
-          db.ref(`users/${uid}/wallet`).transaction(c => (c || 0) + amountNum).then(() => {
-            showNotification('Balance Added', `৳${amountNum} added to ${player.name || 'player'}`, 'success');
-            logActivity('add_balance', `Added ৳${amountNum} to ${player.name || 'Player'} (${uid})`);
+      } else {
+        // Ban user
+        if (confirm(`Are you sure you want to ban ${userName}?`)) {
+          db.ref(`users/${uid}/ban`).set(true).then(() => {
+            showNotification('Player Banned', `${userName} has been banned`, 'warning');
+            logActivity('ban_user', `${userName} (${uid}) banned`);
+            
+            // Send notification to user
             const nid = Date.now();
-            db.ref(`userNotifications/${uid}/${nid}`).set({ title:'Balance Added', message:`Admin added ৳${amountNum} to your wallet.`, type:'success', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
+            db.ref(`userNotifications/${uid}/${nid}`).set({ 
+              title: 'Account Status Update', 
+              message: 'Your account has been banned by admin. Please contact support.', 
+              type: 'important', 
+              timestamp: firebase.database.ServerValue.TIMESTAMP, 
+              read: false 
+            });
           }).catch(err => showNotification('Error', err.message, 'error'));
-        } else if (amount !== null) {
-          showNotification('Error', 'Please enter a valid amount', 'error');
         }
-      });
+      }
+    });
+    
+    // Add balance functionality
+    tr.querySelector('.add-balance-btn').addEventListener('click', function() {
+      const userId = this.getAttribute('data-uid');
+      const userName = this.getAttribute('data-name');
+      
+      document.getElementById('add-balance-user-id').value = userId;
+      document.getElementById('add-balance-amount').value = '';
+      document.getElementById('add-balance-reason').value = '';
+      
+      addBalanceModal.show();
     });
   });
+  
+  // Setup pagination
+  setupPagination('players-pagination', players.length, 1);
 }
 
 // Users: organizers
 function loadOrganizers() {
-  db.ref('users').orderByChild('role').equalTo('organizer').on('value', snap => {
-    const organizers = snap.val() || {};
-    const body = document.getElementById('organizers-body');
-    body.innerHTML = '';
-    Object.entries(organizers).forEach(([uid, org]) => {
-      const tr = document.createElement('tr');
-      const statusBadge = org.ban ? '<span class="badge badge-pill badge-banned">Banned</span>' : (org.verified ? '<span class="badge badge-pill badge-verified">Verified</span>' : '<span class="badge badge-pill" style="background: rgba(255,255,255,0.1);">Active</span>');
-      tr.innerHTML = `
-        <td>${org.name || '-'} ${org.verified ? '<i class="fas fa-check-circle blue-tick ms-1"></i>' : ''}</td>
-        <td>${org.email || '-'}</td>
-        <td><span class="badge badge-pill" style="background: rgba(255, 193, 7, 0.2); color:#ffc107;">${org.referralCount || 0} Referrals</span></td>
-        <td>৳${org.wallet || 0}</td>
-        <td>${statusBadge}</td>
-        <td class="action-buttons">
-          <button class="btn btn-sm btn-brand ban-btn" data-uid="${uid}" data-ban="${org.ban || false}">${org.ban ? '<i class="fas fa-unlock me-1"></i> Unban' : '<i class="fas fa-ban me-1"></i> Ban'}</button>
-          <button class="btn btn-sm btn-accent verify-btn" data-uid="${uid}" data-verified="${org.verified || false}">${org.verified ? '<i class="fas fa-times me-1"></i> Unverify' : '<i class="fas fa-check me-1"></i> Verify'}</button>
-        </td>
-      `;
-      body.appendChild(tr);
-      tr.querySelector('.ban-btn').addEventListener('click', function() {
-        const isBanned = this.getAttribute('data-ban') === 'true';
-        db.ref(`users/${uid}/ban`).set(!isBanned).then(() => {
-          showNotification(isBanned ? 'Organizer Unbanned' : 'Organizer Banned', `${org.name || 'Organizer'} has been ${isBanned ? 'unbanned' : 'banned'}`, isBanned ? 'success' : 'warning');
-          logActivity(!isBanned ? 'ban_organizer' : 'unban_organizer', `${org.name || 'Organizer'} (${uid}) ${!isBanned ? 'banned' : 'unbanned'}`);
-          if (!isBanned) {
+  const organizers = Object.entries(usersCache).filter(([uid, user]) => user.role === 'organizer');
+  const body = document.getElementById('organizers-body');
+  body.innerHTML = '';
+  
+  organizers.forEach(([uid, org]) => {
+    const tr = document.createElement('tr');
+    const statusBadge = org.ban ? 
+      '<span class="badge badge-pill badge-banned">Banned</span>' : 
+      (org.verified ? 
+        '<span class="badge badge-pill badge-verified">Verified</span>' : 
+        '<span class="badge badge-pill" style="background: rgba(255,255,255,0.1);">Active</span>');
+    
+    tr.innerHTML = `
+      <td>${org.name || '-'} ${org.verified ? '<i class="fas fa-check-circle blue-tick ms-1"></i>' : ''}</td>
+      <td>${org.email || '-'}</td>
+      <td><span class="badge badge-pill" style="background: rgba(255, 193, 7, 0.2); color:#ffc107;">${org.referralCount || 0} Referrals</span></td>
+      <td>৳${org.wallet || 0}</td>
+      <td>${statusBadge}</td>
+      <td class="action-buttons">
+        <button class="btn btn-sm btn-brand ban-btn" data-uid="${uid}" data-ban="${org.ban || false}">${org.ban ? '<i class="fas fa-unlock me-1"></i> Unban' : '<i class="fas fa-ban me-1"></i> Ban'}</button>
+        <button class="btn btn-sm btn-accent verify-btn" data-uid="${uid}" data-verified="${org.verified || false}">${org.verified ? '<i class="fas fa-times me-1"></i> Unverify' : '<i class="fas fa-check me-1"></i> Verify'}</button>
+      </td>
+    `;
+    body.appendChild(tr);
+    
+    // Ban/Unban functionality
+    tr.querySelector('.ban-btn').addEventListener('click', function() {
+      const isBanned = this.getAttribute('data-ban') === 'true';
+      const userName = org.name || 'Organizer';
+      
+      if (isBanned) {
+        // Unban organizer
+        db.ref(`users/${uid}/ban`).set(false).then(() => {
+          showNotification('Organizer Unbanned', `${userName} has been unbanned`, 'success');
+          logActivity('unban_organizer', `${userName} (${uid}) unbanned`);
+        }).catch(err => showNotification('Error', err.message, 'error'));
+      } else {
+        // Ban organizer
+        if (confirm(`Are you sure you want to ban ${userName}?`)) {
+          db.ref(`users/${uid}/ban`).set(true).then(() => {
+            showNotification('Organizer Banned', `${userName} has been banned`, 'warning');
+            logActivity('ban_organizer', `${userName} (${uid}) banned`);
+            
+            // Send notification to user
             const nid = Date.now();
-            db.ref(`userNotifications/${uid}/${nid}`).set({ title:'Account Status Update', message:'Your account has been banned by admin. Please contact support.', type:'important', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
-          }
-        }).catch(err => showNotification('Error', err.message, 'error'));
-      });
-      tr.querySelector('.verify-btn').addEventListener('click', function() {
-        const isVerified = this.getAttribute('data-verified') === 'true';
-        db.ref(`users/${uid}/verified`).set(!isVerified).then(() => {
-          showNotification(isVerified ? 'Organizer Unverified' : 'Organizer Verified', `${org.name || 'Organizer'} has been ${isVerified ? 'unverified' : 'verified'}`, 'success');
-          logActivity(!isVerified ? 'verify_organizer' : 'unverify_organizer', `${org.name || 'Organizer'} (${uid}) ${!isVerified ? 'verified' : 'unverified'}`);
-          const nid = Date.now();
-          db.ref(`userNotifications/${uid}/${nid}`).set({ title:'Verification Status Update', message:`Your organizer account has been ${isVerified ? 'unverified' : 'verified'}.`, type:'info', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
-        }).catch(err => showNotification('Error', err.message, 'error'));
-      });
+            db.ref(`userNotifications/${uid}/${nid}`).set({ 
+              title: 'Account Status Update', 
+              message: 'Your account has been banned by admin. Please contact support.', 
+              type: 'important', 
+              timestamp: firebase.database.ServerValue.TIMESTAMP, 
+              read: false 
+            });
+          }).catch(err => showNotification('Error', err.message, 'error'));
+        }
+      }
     });
-  });
-}
-
-// Deposits (players)
-function loadBalanceRequests() {
-  db.ref('paymentRequests').orderByChild('type').equalTo('deposit').on('value', snap => {
-    const requests = snap.val() || {};
-    const body = document.getElementById('balance-req-body');
-    body.innerHTML = '';
-    Object.entries(requests).forEach(([rid, req]) => {
-      const user = usersCache[req.userId] || {};
-      const statusBadge = req.status === 'pending' ? '<span class="badge badge-pill badge-pending">Pending</span>' :
-                          req.status === 'approved' ? '<span class="badge badge-pill badge-approved">Approved</span>' :
-                          '<span class="badge badge-pill badge-rejected">Rejected</span>';
-      const d = new Date(req.timestamp);
-      const dateStr = isNaN(d) ? '-' : d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${user.name || 'N/A'}</td>
-        <td>${user.email || 'N/A'}</td>
-        <td>৳${req.amount || 0}</td>
-        <td>${req.number || '-'}</td>
-        <td>${(req.method || '').toUpperCase()}</td>
-        <td>${statusBadge}</td>
-        <td>${dateStr}</td>
-        <td class="action-buttons">
-          ${req.status === 'pending' ? `
-            <button class="btn btn-sm btn-success approve-btn me-1" data-rid="${rid}" data-uid="${req.userId}" data-amount="${req.amount}"><i class="fas fa-check me-1"></i> Approve</button>
-            <button class="btn btn-sm btn-danger reject-btn" data-rid="${rid}" data-uid="${req.userId}" data-amount="${req.amount}"><i class="fas fa-times me-1"></i> Reject</button>
-          ` : 'No actions'}
-        </td>
-      `;
-      body.appendChild(tr);
-      if (req.status === 'pending') {
-        tr.querySelector('.approve-btn').addEventListener('click', async function() {
-          const requestId = this.getAttribute('data-rid');
-          const userId = this.getAttribute('data-uid');
-          const amount = parseInt(this.getAttribute('data-amount'));
-          try {
-            await db.ref(`paymentRequests/${requestId}/status`).set('approved');
-            await db.ref(`users/${userId}/wallet`).transaction(c => (c || 0) + amount);
-            showNotification('Deposit Approved', `৳${amount} added to ${usersCache[userId]?.name || 'user'}`, 'success');
-            logActivity('deposit_approved', `Approved ৳${amount} deposit for ${usersCache[userId]?.name || userId}`);
+    
+    // Verify/Unverify functionality
+    tr.querySelector('.verify-btn').addEventListener('click', function() {
+      const isVerified = this.getAttribute('data-verified') === 'true';
+      const userName = org.name || 'Organizer';
+      
+      if (isVerified) {
+        // Unverify organizer
+        if (confirm(`Are you sure you want to unverify ${userName}?`)) {
+          db.ref(`users/${uid}/verified`).set(false).then(() => {
+            showNotification('Organizer Unverified', `${userName} has been unverified`, 'info');
+            logActivity('unverify_organizer', `${userName} (${uid}) unverified`);
+            
+            // Send notification to user
             const nid = Date.now();
-            db.ref(`userNotifications/${userId}/${nid}`).set({ title:'Deposit Approved', message:`Your deposit of ৳${amount} has been approved.`, type:'success', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
-          } catch (e) { showNotification('Error', e.message, 'error'); }
-        });
-        tr.querySelector('.reject-btn').addEventListener('click', function() {
-          const requestId = this.getAttribute('data-rid');
-          const userId = this.getAttribute('data-uid');
-          const amount = parseInt(this.getAttribute('data-amount'));
-          db.ref(`paymentRequests/${requestId}/status`).set('rejected').then(() => {
-            showNotification('Deposit Rejected', `Deposit request rejected`, 'warning');
-            logActivity('deposit_rejected', `Rejected ৳${amount} deposit for ${usersCache[userId]?.name || userId}`);
-            const nid = Date.now();
-            db.ref(`userNotifications/${userId}/${nid}`).set({ title:'Deposit Rejected', message:`Your deposit of ৳${amount} has been rejected.`, type:'warning', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
-          }).catch(e => showNotification('Error', e.message, 'error'));
-        });
+            db.ref(`userNotifications/${uid}/${nid}`).set({ 
+              title: 'Verification Status Update', 
+              message: 'Your organizer verification has been removed.', 
+              type: 'info', 
+              timestamp: firebase.database.ServerValue.TIMESTAMP, 
+              read: false 
+            });
+          }).catch(err => showNotification('Error', err.message, 'error'));
+        }
+      } else {
+        // Verify organizer
+        db.ref(`users/${uid}/verified`).set(true).then(() => {
+          showNotification('Organizer Verified', `${userName} has been verified`, 'success');
+          logActivity('verify_organizer', `${userName} (${uid}) verified`);
+          
+          // Send notification to user
+          const nid = Date.now();
+          db.ref(`userNotifications/${uid}/${nid}`).set({ 
+            title: 'Verification Status Update', 
+            message: 'Your organizer account has been verified by admin.', 
+            type: 'success', 
+            timestamp: firebase.database.ServerValue.TIMESTAMP, 
+            read: false 
+          });
+        }).catch(err => showNotification('Error', err.message, 'error'));
       }
     });
   });
+  
+  // Setup pagination
+  setupPagination('organizers-pagination', organizers.length, 1);
+}
+
+// Add balance functionality
+btnAddBalance.addEventListener('click', function() {
+  const userId = document.getElementById('add-balance-user-id').value;
+  const amount = parseFloat(document.getElementById('add-balance-amount').value);
+  const reason = document.getElementById('add-balance-reason').value;
+  
+  if (!userId || isNaN(amount) || amount <= 0) {
+    showNotification('Error', 'Please enter a valid amount', 'error');
+    return;
+  }
+  
+  const user = usersCache[userId] || {};
+  const userName = user.name || 'User';
+  
+  db.ref(`users/${userId}/wallet`).transaction(current => {
+    return (current || 0) + amount;
+  }).then(() => {
+    showNotification('Balance Added', `৳${amount} added to ${userName}'s wallet`, 'success');
+    logActivity('add_balance', `Added ৳${amount} to ${userName} (${userId})${reason ? ` - Reason: ${reason}` : ''}`);
+    
+    // Send notification to user
+    const nid = Date.now();
+    db.ref(`userNotifications/${userId}/${nid}`).set({ 
+      title: 'Balance Added', 
+      message: `Admin added ৳${amount} to your wallet.${reason ? ` Reason: ${reason}` : ''}`, 
+      type: 'success', 
+      timestamp: firebase.database.ServerValue.TIMESTAMP, 
+      read: false 
+    });
+    
+    addBalanceModal.hide();
+  }).catch(err => {
+    showNotification('Error', err.message, 'error');
+  });
+});
+
+// Deposits (players)
+function loadBalanceRequests() {
+  const deposits = Object.entries(paymentRequestsCache).filter(([rid, req]) => req.type === 'deposit');
+  const body = document.getElementById('balance-req-body');
+  body.innerHTML = '';
+  
+  deposits.forEach(([rid, req]) => {
+    const user = usersCache[req.userId] || {};
+    const statusBadge = req.status === 'pending' ? 
+      '<span class="badge badge-pill badge-pending">Pending</span>' :
+      req.status === 'approved' ? 
+      '<span class="badge badge-pill badge-approved">Approved</span>' :
+      '<span class="badge badge-pill badge-rejected">Rejected</span>';
+    
+    const d = new Date(req.timestamp);
+    const dateStr = isNaN(d) ? '-' : d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${user.name || 'N/A'}</td>
+      <td>${user.email || 'N/A'}</td>
+      <td>৳${req.amount || 0}</td>
+      <td>${req.number || '-'}</td>
+      <td>${(req.method || '').toUpperCase()}</td>
+      <td>${statusBadge}</td>
+      <td>${dateStr}</td>
+      <td class="action-buttons">
+        ${req.status === 'pending' ? `
+          <button class="btn btn-sm btn-success approve-btn me-1" data-rid="${rid}" data-uid="${req.userId}" data-amount="${req.amount}"><i class="fas fa-check me-1"></i> Approve</button>
+          <button class="btn btn-sm btn-danger reject-btn" data-rid="${rid}" data-uid="${req.userId}" data-amount="${req.amount}"><i class="fas fa-times me-1"></i> Reject</button>
+        ` : 'No actions'}
+      </td>
+    `;
+    body.appendChild(tr);
+    
+    if (req.status === 'pending') {
+      // Approve deposit
+      tr.querySelector('.approve-btn').addEventListener('click', async function() {
+        const requestId = this.getAttribute('data-rid');
+        const userId = this.getAttribute('data-uid');
+        const amount = parseInt(this.getAttribute('data-amount'));
+        const user = usersCache[userId] || {};
+        
+        try {
+          await db.ref(`paymentRequests/${requestId}/status`).set('approved');
+          await db.ref(`users/${userId}/wallet`).transaction(c => (c || 0) + amount);
+          
+          showNotification('Deposit Approved', `৳${amount} added to ${user.name || 'user'}`, 'success');
+          logActivity('deposit_approved', `Approved ৳${amount} deposit for ${user.name || userId}`);
+          
+          // Send notification to user
+          const nid = Date.now();
+          db.ref(`userNotifications/${userId}/${nid}`).set({ 
+            title: 'Deposit Approved', 
+            message: `Your deposit of ৳${amount} has been approved.`, 
+            type: 'success', 
+            timestamp: firebase.database.ServerValue.TIMESTAMP, 
+            read: false 
+          });
+        } catch (e) { 
+          showNotification('Error', e.message, 'error'); 
+        }
+      });
+      
+      // Reject deposit
+      tr.querySelector('.reject-btn').addEventListener('click', function() {
+        const requestId = this.getAttribute('data-rid');
+        const userId = this.getAttribute('data-uid');
+        const amount = parseInt(this.getAttribute('data-amount'));
+        const user = usersCache[userId] || {};
+        
+        if (confirm('Are you sure you want to reject this deposit request?')) {
+          db.ref(`paymentRequests/${requestId}/status`).set('rejected').then(() => {
+            showNotification('Deposit Rejected', `Deposit request rejected`, 'warning');
+            logActivity('deposit_rejected', `Rejected ৳${amount} deposit for ${user.name || userId}`);
+            
+            // Send notification to user
+            const nid = Date.now();
+            db.ref(`userNotifications/${userId}/${nid}`).set({ 
+              title: 'Deposit Rejected', 
+              message: `Your deposit of ৳${amount} has been rejected.`, 
+              type: 'warning', 
+              timestamp: firebase.database.ServerValue.TIMESTAMP, 
+              read: false 
+            });
+          }).catch(e => showNotification('Error', e.message, 'error'));
+        }
+      });
+    }
+  });
+  
+  // Setup pagination
+  setupPagination('deposits-pagination', deposits.length, 1);
 }
 
 // Withdrawals (players + organizers)
 function loadWithdrawRequests() {
-  db.ref('paymentRequests').orderByChild('type').equalTo('withdraw').on('value', snap => {
-    const requests = snap.val() || {};
-    const body = document.getElementById('withdraw-req-body');
-    body.innerHTML = '';
-    Object.entries(requests).forEach(([rid, req]) => {
-      const user = usersCache[req.userId] || {};
-      const role = user.role || '-';
-      const statusBadge = req.status === 'pending' ? '<span class="badge badge-pill badge-pending">Pending</span>' :
-                          req.status === 'approved' ? '<span class="badge badge-pill badge-approved">Approved</span>' :
-                          '<span class="badge badge-pill badge-rejected">Rejected</span>';
-      const d = new Date(req.timestamp);
-      const dateStr = isNaN(d) ? '-' : d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${user.name || 'N/A'}</td>
-        <td>${user.email || 'N/A'}</td>
-        <td><span class="badge ${role === 'organizer' ? 'bg-info' : 'bg-secondary'}">${role}</span></td>
-        <td>৳${req.amount || 0}</td>
-        <td>${req.number || '-'}</td>
-        <td>${(req.method || '').toUpperCase()}</td>
-        <td>${statusBadge}</td>
-        <td>${dateStr}</td>
-        <td class="action-buttons">
-          ${req.status === 'pending' ? `
-            <button class="btn btn-sm btn-success approve-btn me-1" data-rid="${rid}" data-uid="${req.userId}" data-amount="${req.amount}"><i class="fas fa-check me-1"></i> Approve</button>
-            <button class="btn btn-sm btn-danger reject-btn" data-rid="${rid}" data-uid="${req.userId}" data-amount="${req.amount}"><i class="fas fa-times me-1"></i> Reject</button>
-          ` : 'No actions'}
-        </td>
-      `;
-      body.appendChild(tr);
-      if (req.status === 'pending') {
-        tr.querySelector('.approve-btn').addEventListener('click', async function() {
-          const requestId = this.getAttribute('data-rid');
-          const userId = this.getAttribute('data-uid');
-          const amount = parseInt(this.getAttribute('data-amount')) || 0;
-          try {
-            await db.ref(`paymentRequests/${requestId}/status`).set('approved');
-            await db.ref(`users/${userId}/wallet`).transaction(c => (c || 0) - amount);
-            showNotification('Withdrawal Approved', `৳${amount} withdrawn from ${usersCache[userId]?.name || 'user'}`, 'success');
-            logActivity('withdrawal_approved', `Approved ৳${amount} withdrawal for ${usersCache[userId]?.name || userId}`);
-            const nid = Date.now();
-            db.ref(`userNotifications/${userId}/${nid}`).set({ title:'Withdrawal Approved', message:`Your withdrawal of ৳${amount} has been approved.`, type:'success', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
-          } catch (e) { showNotification('Error', e.message, 'error'); }
-        });
-        tr.querySelector('.reject-btn').addEventListener('click', function() {
-          const requestId = this.getAttribute('data-rid');
-          const userId = this.getAttribute('data-uid');
-          const amount = parseInt(this.getAttribute('data-amount')) || 0;
+  const withdrawals = Object.entries(paymentRequestsCache).filter(([rid, req]) => req.type === 'withdraw');
+  const body = document.getElementById('withdraw-req-body');
+  body.innerHTML = '';
+  
+  withdrawals.forEach(([rid, req]) => {
+    const user = usersCache[req.userId] || {};
+    const role = user.role || '-';
+    const statusBadge = req.status === 'pending' ? 
+      '<span class="badge badge-pill badge-pending">Pending</span>' :
+      req.status === 'approved' ? 
+      '<span class="badge badge-pill badge-approved">Approved</span>' :
+      '<span class="badge badge-pill badge-rejected">Rejected</span>';
+    
+    const d = new Date(req.timestamp);
+    const dateStr = isNaN(d) ? '-' : d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${user.name || 'N/A'}</td>
+      <td>${user.email || 'N/A'}</td>
+      <td><span class="badge ${role === 'organizer' ? 'bg-info' : 'bg-secondary'}">${role}</span></td>
+      <td>৳${req.amount || 0}</td>
+      <td>${req.number || '-'}</td>
+      <td>${(req.method || '').toUpperCase()}</td>
+      <td>${statusBadge}</td>
+      <td>${dateStr}</td>
+      <td class="action-buttons">
+        ${req.status === 'pending' ? `
+          <button class="btn btn-sm btn-success approve-btn me-1" data-rid="${rid}" data-uid="${req.userId}" data-amount="${req.amount}"><i class="fas fa-check me-1"></i> Approve</button>
+          <button class="btn btn-sm btn-danger reject-btn" data-rid="${rid}" data-uid="${req.userId}" data-amount="${req.amount}"><i class="fas fa-times me-1"></i> Reject</button>
+        ` : 'No actions'}
+      </td>
+    `;
+    body.appendChild(tr);
+    
+    if (req.status === 'pending') {
+      // Approve withdrawal
+      tr.querySelector('.approve-btn').addEventListener('click', async function() {
+        const requestId = this.getAttribute('data-rid');
+        const userId = this.getAttribute('data-uid');
+        const amount = parseInt(this.getAttribute('data-amount')) || 0;
+        const user = usersCache[userId] || {};
+        
+        try {
+          await db.ref(`paymentRequests/${requestId}/status`).set('approved');
+          await db.ref(`users/${userId}/wallet`).transaction(c => (c || 0) - amount);
+          
+          showNotification('Withdrawal Approved', `৳${amount} withdrawn from ${user.name || 'user'}`, 'success');
+          logActivity('withdrawal_approved', `Approved ৳${amount} withdrawal for ${user.name || userId}`);
+          
+          // Send notification to user
+          const nid = Date.now();
+          db.ref(`userNotifications/${userId}/${nid}`).set({ 
+            title: 'Withdrawal Approved', 
+            message: `Your withdrawal of ৳${amount} has been approved.`, 
+            type: 'success', 
+            timestamp: firebase.database.ServerValue.TIMESTAMP, 
+            read: false 
+          });
+        } catch (e) { 
+          showNotification('Error', e.message, 'error'); 
+        }
+      });
+      
+      // Reject withdrawal
+      tr.querySelector('.reject-btn').addEventListener('click', function() {
+        const requestId = this.getAttribute('data-rid');
+        const userId = this.getAttribute('data-uid');
+        const amount = parseInt(this.getAttribute('data-amount')) || 0;
+        const user = usersCache[userId] || {};
+        
+        if (confirm('Are you sure you want to reject this withdrawal request?')) {
           db.ref(`paymentRequests/${requestId}/status`).set('rejected').then(() => {
             showNotification('Withdrawal Rejected', `Withdrawal request rejected`, 'warning');
-            logActivity('withdrawal_rejected', `Rejected ৳${amount} withdrawal for ${usersCache[userId]?.name || userId}`);
+            logActivity('withdrawal_rejected', `Rejected ৳${amount} withdrawal for ${user.name || userId}`);
+            
+            // Send notification to user
             const nid = Date.now();
-            db.ref(`userNotifications/${userId}/${nid}`).set({ title:'Withdrawal Rejected', message:`Your withdrawal request of ৳${amount} has been rejected.`, type:'warning', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
+            db.ref(`userNotifications/${userId}/${nid}`).set({ 
+              title: 'Withdrawal Rejected', 
+              message: `Your withdrawal request of ৳${amount} has been rejected.`, 
+              type: 'warning', 
+              timestamp: firebase.database.ServerValue.TIMESTAMP, 
+              read: false 
+            });
           }).catch(e => showNotification('Error', e.message, 'error'));
-        });
-      }
-    });
+        }
+      });
+    }
   });
+  
+  // Setup pagination
+  setupPagination('withdrawals-pagination', withdrawals.length, 1);
 }
 
 // Tournaments
 function loadTournaments() {
-  db.ref('tournaments').on('value', snap => {
-    const tournaments = snap.val() || {};
-    const body = document.getElementById('tournaments-body');
-    body.innerHTML = '';
-    Object.entries(tournaments).forEach(([tid, t]) => {
-      const statusBadge = t.status === 'pending' ? '<span class="badge badge-pill badge-pending">Pending</span>' :
-                          t.status === 'approved' ? '<span class="badge badge-pill badge-approved">Approved</span>' :
-                          t.status === 'completed' ? '<span class="badge badge-pill" style="background: rgba(0, 123, 255, 0.2); color:#007bff;">Completed</span>' :
-                          '<span class="badge badge-pill badge-rejected">Rejected</span>';
-      const dt = new Date(t.date);
-      const dateStr = (isNaN(dt) ? (t.date || '-') : dt.toLocaleDateString()) + ' ' + (t.time || '');
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${t.name || '-'}</td>
-        <td>${t.organizerName || 'N/A'}</td>
-        <td>৳${t.fee || 0}</td>
-        <td>৳${t.prize || 'N/A'}</td>
-        <td>${dateStr}</td>
-        <td>${statusBadge}</td>
-        <td class="action-buttons">
-          <button class="btn btn-sm btn-brand edit-btn" data-tid="${tid}"><i class="fas fa-edit me-1"></i> Edit</button>
-          <button class="btn btn-sm btn-danger delete-btn" data-tid="${tid}" data-name="${t.name}"><i class="fas fa-trash me-1"></i> Delete</button>
-          ${t.status === 'pending' ? `
-            <button class="btn btn-sm btn-success approve-btn me-1" data-tid="${tid}" data-organizer="${t.organizer}"><i class="fas fa-check me-1"></i> Approve</button>
-            <button class="btn btn-sm btn-danger reject-btn" data-tid="${tid}" data-organizer="${t.organizer}"><i class="fas fa-times me-1"></i> Reject</button>
-          ` : ''}
-        </td>
-      `;
-      body.appendChild(tr);
+  const tournaments = Object.entries(tournamentsCache);
+  const body = document.getElementById('tournaments-body');
+  body.innerHTML = '';
+  
+  tournaments.forEach(([tid, t]) => {
+    // Get organizer name from users cache
+    const organizer = usersCache[t.organizer] || {};
+    const organizerName = organizer.name || 'N/A';
+    
+    const statusBadge = t.status === 'pending' ? 
+      '<span class="badge badge-pill badge-pending">Pending</span>' :
+      t.status === 'approved' ? 
+      '<span class="badge badge-pill badge-approved">Approved</span>' :
+      t.status === 'completed' ? 
+      '<span class="badge badge-pill" style="background: rgba(0, 123, 255, 0.2); color:#007bff;">Completed</span>' :
+      '<span class="badge badge-pill badge-rejected">Rejected</span>';
+    
+    const dt = new Date(t.date);
+    const dateStr = (isNaN(dt) ? (t.date || '-') : dt.toLocaleDateString()) + ' ' + (t.time || '');
+    
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${t.name || '-'}</td>
+      <td>${organizerName}</td>
+      <td>৳${t.fee || 0}</td>
+      <td>৳${t.prize || 'N/A'}</td>
+      <td>${dateStr}</td>
+      <td>${statusBadge}</td>
+      <td class="action-buttons">
+        <button class="btn btn-sm btn-brand edit-btn" data-tid="${tid}"><i class="fas fa-edit me-1"></i> Edit</button>
+        <button class="btn btn-sm btn-danger delete-btn" data-tid="${tid}" data-name="${t.name}"><i class="fas fa-trash me-1"></i> Delete</button>
+        ${t.status === 'pending' ? `
+          <button class="btn btn-sm btn-success approve-btn me-1" data-tid="${tid}" data-organizer="${t.organizer}"><i class="fas fa-check me-1"></i> Approve</button>
+          <button class="btn btn-sm btn-danger reject-btn" data-tid="${tid}" data-organizer="${t.organizer}"><i class="fas fa-times me-1"></i> Reject</button>
+        ` : ''}
+      </td>
+    `;
+    body.appendChild(tr);
 
-      tr.querySelector('.edit-btn').addEventListener('click', function() {
-        const id = this.getAttribute('data-tid');
-        const data = tournaments[id];
-        document.getElementById('edit-tournament-id').value = id;
-        document.getElementById('edit-tournament-name').value = data.name || '';
-        document.getElementById('edit-tournament-fee').value = data.fee || 0;
-        document.getElementById('edit-tournament-prize').value = data.prize || '';
-        document.getElementById('edit-tournament-status').value = data.status || 'pending';
-        const d = new Date(data.date);
-        document.getElementById('edit-tournament-date').value = !isNaN(d) ? d.toISOString().split('T')[0] : (data.date || '');
-        document.getElementById('edit-tournament-time').value = data.time || '';
-        document.getElementById('edit-tournament-desc').value = data.description || '';
-        document.getElementById('edit-tournament-rules').value = data.rules || '';
-        editTournamentModal.show();
-      });
+    // Edit tournament
+    tr.querySelector('.edit-btn').addEventListener('click', function() {
+      const id = this.getAttribute('data-tid');
+      const data = tournamentsCache[id];
+      
+      document.getElementById('edit-tournament-id').value = id;
+      document.getElementById('edit-tournament-name').value = data.name || '';
+      document.getElementById('edit-tournament-fee').value = data.fee || 0;
+      document.getElementById('edit-tournament-prize').value = data.prize || '';
+      document.getElementById('edit-tournament-status').value = data.status || 'pending';
+      
+      const d = new Date(data.date);
+      document.getElementById('edit-tournament-date').value = !isNaN(d) ? d.toISOString().split('T')[0] : (data.date || '');
+      document.getElementById('edit-tournament-time').value = data.time || '';
+      document.getElementById('edit-tournament-desc').value = data.description || '';
+      document.getElementById('edit-tournament-rules').value = data.rules || '';
+      document.getElementById('edit-tournament-max-participants').value = data.maxParticipants || '';
+      document.getElementById('edit-tournament-game-mode').value = data.gameMode || '';
+      
+      editTournamentModal.show();
+    });
 
-      tr.querySelector('.delete-btn').addEventListener('click', function() {
+    // Delete tournament
+    tr.querySelector('.delete-btn').addEventListener('click', function() {
+      const id = this.getAttribute('data-tid');
+      const name = this.getAttribute('data-name');
+      
+      if (confirm(`Are you sure you want to delete tournament "${name}"?`)) {
+        db.ref(`tournaments/${id}`).remove().then(() => {
+          showNotification('Tournament Deleted', `"${name}" has been deleted`, 'success');
+          logActivity('tournament_deleted', `Deleted tournament "${name}" (${id})`);
+        }).catch(e => showNotification('Error', e.message, 'error'));
+      }
+    });
+
+    // Approve tournament
+    if (t.status === 'pending') {
+      tr.querySelector('.approve-btn').addEventListener('click', function() {
         const id = this.getAttribute('data-tid');
-        const name = this.getAttribute('data-name');
-        if (confirm(`Delete tournament "${name}"?`)) {
-          db.ref(`tournaments/${id}`).remove().then(() => {
-            showNotification('Tournament Deleted', `"${name}" has been deleted`, 'success');
-            logActivity('tournament_deleted', `Deleted tournament "${name}" (${id})`);
+        const orgId = this.getAttribute('data-organizer');
+        const tournament = tournamentsCache[id];
+        
+        if (confirm(`Approve tournament "${tournament.name}"?`)) {
+          db.ref(`tournaments/${id}/status`).set('approved').then(() => {
+            showNotification('Tournament Approved', 'Tournament approved and published', 'success');
+            logActivity('tournament_approved', `Approved tournament "${tournament.name}" (${id})`);
+            
+            // Send notification to organizer
+            const nid = Date.now();
+            db.ref(`userNotifications/${orgId}/${nid}`).set({ 
+              title: 'Tournament Approved', 
+              message: `Your tournament "${tournament.name}" is now live.`, 
+              type: 'success', 
+              timestamp: firebase.database.ServerValue.TIMESTAMP, 
+              read: false 
+            });
           }).catch(e => showNotification('Error', e.message, 'error'));
         }
       });
-
-      if (t.status === 'pending') {
-        tr.querySelector('.approve-btn').addEventListener('click', function() {
-          const id = this.getAttribute('data-tid');
-          const orgId = this.getAttribute('data-organizer');
-          db.ref(`tournaments/${id}/status`).set('approved').then(() => {
-            showNotification('Tournament Approved', 'Tournament approved and published', 'success');
-            logActivity('tournament_approved', `Approved tournament "${t.name}" (${id})`);
-            const nid = Date.now();
-            db.ref(`userNotifications/${orgId}/${nid}`).set({ title:'Tournament Approved', message:`Your tournament "${t.name}" is live.`, type:'success', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
-          }).catch(e => showNotification('Error', e.message, 'error'));
-        });
-        tr.querySelector('.reject-btn').addEventListener('click', function() {
-          const id = this.getAttribute('data-tid');
-          const orgId = this.getAttribute('data-organizer');
+      
+      // Reject tournament
+      tr.querySelector('.reject-btn').addEventListener('click', function() {
+        const id = this.getAttribute('data-tid');
+        const orgId = this.getAttribute('data-organizer');
+        const tournament = tournamentsCache[id];
+        
+        if (confirm(`Reject tournament "${tournament.name}"?`)) {
           db.ref(`tournaments/${id}/status`).set('rejected').then(() => {
             showNotification('Tournament Rejected', 'Tournament rejected', 'warning');
-            logActivity('tournament_rejected', `Rejected tournament "${t.name}" (${id})`);
+            logActivity('tournament_rejected', `Rejected tournament "${tournament.name}" (${id})`);
+            
+            // Send notification to organizer
             const nid = Date.now();
-            db.ref(`userNotifications/${orgId}/${nid}`).set({ title:'Tournament Rejected', message:`Your tournament "${t.name}" was rejected.`, type:'warning', timestamp: firebase.database.ServerValue.TIMESTAMP, read:false });
+            db.ref(`userNotifications/${orgId}/${nid}`).set({ 
+              title: 'Tournament Rejected', 
+              message: `Your tournament "${tournament.name}" was rejected.`, 
+              type: 'warning', 
+              timestamp: firebase.database.ServerValue.TIMESTAMP, 
+              read: false 
+            });
           }).catch(e => showNotification('Error', e.message, 'error'));
-        });
-      }
-    });
+        }
+      });
+    }
   });
+  
+  // Setup pagination
+  setupPagination('tournaments-pagination', tournaments.length, 1);
 }
 
 // Update tournament
@@ -829,15 +1292,22 @@ btnUpdateTournament.addEventListener('click', function() {
   const id = document.getElementById('edit-tournament-id').value;
   const data = {
     name: document.getElementById('edit-tournament-name').value,
-    fee: document.getElementById('edit-tournament-fee').value,
+    fee: parseInt(document.getElementById('edit-tournament-fee').value) || 0,
     prize: document.getElementById('edit-tournament-prize').value,
     status: document.getElementById('edit-tournament-status').value,
     date: document.getElementById('edit-tournament-date').value,
     time: document.getElementById('edit-tournament-time').value,
     description: document.getElementById('edit-tournament-desc').value,
-    rules: document.getElementById('edit-tournament-rules').value
+    rules: document.getElementById('edit-tournament-rules').value,
+    maxParticipants: parseInt(document.getElementById('edit-tournament-max-participants').value) || 0,
+    gameMode: document.getElementById('edit-tournament-game-mode').value
   };
-  if (!data.name || !data.fee || !data.date) { showNotification('Error', 'Please fill all required fields', 'error'); return; }
+  
+  if (!data.name || !data.fee || !data.date) { 
+    showNotification('Error', 'Please fill all required fields', 'error'); 
+    return; 
+  }
+  
   db.ref(`tournaments/${id}`).update(data).then(() => {
     showNotification('Tournament Updated', 'Tournament details updated', 'success');
     logActivity('tournament_updated', `Updated tournament "${data.name}" (${id})`);
@@ -847,32 +1317,57 @@ btnUpdateTournament.addEventListener('click', function() {
 
 // Analytics (Charts)
 function setupAnalytics() {
-  db.ref('users').on('value', snap => {
-    const users = snap.val() || {};
-    const totalUsers = Object.keys(users).length;
-    let players = 0, organizers = 0, others = 0, online = 0;
-    const now = Date.now();
-    Object.entries(users).forEach(([uid, u]) => {
-      const role = u.role || 'other';
-      if (role === 'player') players++;
-      else if (role === 'organizer') organizers++;
-      else others++;
-      const isOnline = (u.online === true) || (u.lastActive && (now - u.lastActive) <= 5 * 60 * 1000);
-      if (isOnline) online++;
-    });
-    renderAnalyticsCharts({ totalUsers, players, organizers, others, online });
+  // Users data for charts
+  const totalUsers = Object.keys(usersCache).length;
+  let players = 0, organizers = 0, others = 0, online = 0;
+  const now = Date.now();
+  
+  Object.entries(usersCache).forEach(([uid, u]) => {
+    const role = u.role || 'other';
+    if (role === 'player') players++;
+    else if (role === 'organizer') organizers++;
+    else others++;
+    
+    const isOnline = (u.online === true) || (u.lastActive && (now - u.lastActive) <= 5 * 60 * 1000);
+    if (isOnline) online++;
+  });
+  
+  // Payment data for charts
+  let totalDeposits = 0, totalWithdrawals = 0, pendingDeposits = 0, pendingWithdrawals = 0;
+  Object.values(paymentRequestsCache).forEach(req => {
+    if (req.type === 'deposit') {
+      totalDeposits += parseInt(req.amount) || 0;
+      if (req.status === 'pending') pendingDeposits++;
+    } else if (req.type === 'withdraw') {
+      totalWithdrawals += parseInt(req.amount) || 0;
+      if (req.status === 'pending') pendingWithdrawals++;
+    }
+  });
+  
+  // Tournament data for charts
+  let pendingTournaments = 0, approvedTournaments = 0, rejectedTournaments = 0, completedTournaments = 0;
+  Object.values(tournamentsCache).forEach(t => {
+    if (t.status === 'pending') pendingTournaments++;
+    else if (t.status === 'approved') approvedTournaments++;
+    else if (t.status === 'rejected') rejectedTournaments++;
+    else if (t.status === 'completed') completedTournaments++;
+  });
+  
+  renderAnalyticsCharts({ 
+    totalUsers, players, organizers, others, online,
+    totalDeposits, totalWithdrawals, pendingDeposits, pendingWithdrawals,
+    pendingTournaments, approvedTournaments, rejectedTournaments, completedTournaments
   });
 }
 
-function renderAnalyticsCharts({ totalUsers, players, organizers, others, online }) {
+function renderAnalyticsCharts(data) {
+  // Users Overview Chart
   const countsCtx = document.getElementById('countsChart').getContext('2d');
-  const rolesCtx = document.getElementById('rolesChart').getContext('2d');
-
   const countsData = {
     labels: ['Total Users', 'Players', 'Organizers', 'Online Users'],
     datasets: [{
       label: 'Counts',
-      data: [totalUsers, players, organizers, online],
+      data: [data.totalUsers, data.players, data.organizers, data.online],
       backgroundColor: ['#6e00ff', '#00f0ff', '#ff00f7', '#28a745']
     }]
   };
@@ -895,11 +1390,13 @@ function renderAnalyticsCharts({ totalUsers, players, organizers, others, online
     countsChart.update();
   }
 
+  // Role Distribution Chart
+  const rolesCtx = document.getElementById('rolesChart').getContext('2d');
   const rolesData = {
     labels: ['Players', 'Organizers', 'Others'],
     datasets: [{
       label: 'Roles',
-      data: [players, organizers, others],
+      data: [data.players, data.organizers, data.others],
       backgroundColor: ['#00f0ff', '#ff00f7', '#6e00ff']
     }]
   };
@@ -919,6 +1416,62 @@ function renderAnalyticsCharts({ totalUsers, players, organizers, others, online
     rolesChart.data = rolesData;
     rolesChart.update();
   }
+  
+  // Financial Overview Chart
+  const financialCtx = document.getElementById('financialChart').getContext('2d');
+  const financialData = {
+    labels: ['Total Deposits', 'Total Withdrawals', 'Pending Deposits', 'Pending Withdrawals'],
+    datasets: [{
+      label: 'Amount',
+      data: [data.totalDeposits, data.totalWithdrawals, data.pendingDeposits, data.pendingWithdrawals],
+      backgroundColor: ['#28a745', '#dc3545', '#ffc107', '#6f42c1']
+    }]
+  };
+  
+  if (!financialChart) {
+    financialChart = new Chart(financialCtx, {
+      type: 'bar',
+      data: financialData,
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#8a8aa8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { ticks: { color: '#8a8aa8' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+        }
+      }
+    });
+  } else {
+    financialChart.data = financialData;
+    financialChart.update();
+  }
+  
+  // Tournament Status Chart
+  const tournamentStatusCtx = document.getElementById('tournamentStatusChart').getContext('2d');
+  const tournamentStatusData = {
+    labels: ['Pending', 'Approved', 'Rejected', 'Completed'],
+    datasets: [{
+      label: 'Tournaments',
+      data: [data.pendingTournaments, data.approvedTournaments, data.rejectedTournaments, data.completedTournaments],
+      backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#007bff']
+    }]
+  };
+  
+  if (!tournamentStatusChart) {
+    tournamentStatusChart = new Chart(tournamentStatusCtx, {
+      type: 'doughnut',
+      data: tournamentStatusData,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#e0e0ff' } }
+        }
+      }
+    });
+  } else {
+    tournamentStatusChart.data = tournamentStatusData;
+    tournamentStatusChart.update();
+  }
 }
 
 // Admin Activity UI
@@ -928,6 +1481,7 @@ function loadAdminActivity() {
     const arr = Object.values(items).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     const body = document.getElementById('activity-body');
     body.innerHTML = '';
+    
     arr.forEach(it => {
       const d = new Date(it.timestamp);
       const tr = document.createElement('tr');
@@ -938,6 +1492,60 @@ function loadAdminActivity() {
         <td>${it.admin || 'Admin'}</td>
       `;
       body.appendChild(tr);
+    });
+    
+    // Setup pagination
+    setupPagination('activity-pagination', arr.length, 1);
+  });
+}
+
+// Pagination helper
+function setupPagination(elementId, totalItems, currentPage) {
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const paginationElement = document.getElementById(elementId);
+  
+  if (totalPages <= 1) {
+    paginationElement.innerHTML = '';
+    return;
+  }
+  
+  let paginationHTML = '';
+  
+  // Previous button
+  if (currentPage > 1) {
+    paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a></li>`;
+  } else {
+    paginationHTML += `<li class="page-item disabled"><span class="page-link">Previous</span></li>`;
+  }
+  
+  // Page numbers
+  for (let i = 1; i <= totalPages; i++) {
+    if (i === currentPage) {
+      paginationHTML += `<li class="page-item active"><span class="page-link">${i}</span></li>`;
+    } else {
+      paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${i}">${i}</a></li>`;
+    }
+  }
+  
+  // Next button
+  if (currentPage < totalPages) {
+    paginationHTML += `<li class="page-item"><a class="page-link" href="#" data-page="${currentPage + 1}">Next</a></li>`;
+  } else {
+    paginationHTML += `<li class="page-item disabled"><span class="page-link">Next</span></li>`;
+  }
+  
+  paginationElement.innerHTML = paginationHTML;
+  
+  // Add event listeners to page links
+  paginationElement.querySelectorAll('.page-link').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const page = parseInt(this.getAttribute('data-page'));
+      if (!isNaN(page)) {
+        // Here you would implement the logic to show the specific page
+        // This would require storing the current data and paginating it
+        console.log(`Page ${page} clicked for ${elementId}`);
+      }
     });
   });
 }
@@ -951,6 +1559,13 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAnalytics();
     loadAdminActivity();
   }
+  
+  // Add keyboard event for login
+  adminPassword.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      btnLogin.click();
+    }
+  });
 });
 </script>
 </body>
