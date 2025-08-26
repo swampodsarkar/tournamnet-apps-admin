@@ -308,6 +308,121 @@
             margin: 100px auto;
             padding: 20px;
         }
+        
+        .sub-tabs {
+            display: flex;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #334155;
+            overflow-x: auto;
+        }
+        
+        .sub-tab-btn {
+            padding: 8px 12px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .sub-tab-btn.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .sub-tab-content {
+            display: none;
+        }
+        
+        .sub-tab-content.active {
+            display: block;
+        }
+        
+        .player-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        
+        .player-item {
+            padding: 8px;
+            border-bottom: 1px solid #334155;
+            cursor: pointer;
+        }
+        
+        .player-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .player-item.selected {
+            background-color: var(--primary);
+            color: var(--dark);
+            border-radius: 4px;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            background: var(--dark);
+            margin-bottom: 15px;
+        }
+        
+        .stats-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 5px 0;
+        }
+        
+        .stats-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .activity-log {
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            border: 1px solid #334155;
+            border-radius: 8px;
+        }
+        
+        .activity-item {
+            padding: 8px;
+            border-bottom: 1px solid #334155;
+            font-size: 14px;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .badge-warning {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .badge-info {
+            background-color: var(--info);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -388,12 +503,13 @@
                                 <th>Entry Fee</th>
                                 <th>Prize Pool</th>
                                 <th>Players</th>
+                                <th>Winner</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="tournamentsList">
                             <tr>
-                                <td colspan="6" class="text-center">Loading tournaments...</td>
+                                <td colspan="7" class="text-center">Loading tournaments...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -403,28 +519,64 @@
 
         <!-- Transactions Tab -->
         <div id="transactionsTab" class="tab-content">
-            <div class="card">
-                <h3 class="form-section-title"><i class="fas fa-money-bill-wave"></i> Payment Requests</h3>
-                
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>User</th>
-                                <th>Type</th>
-                                <th>Amount</th>
-                                <th>Method</th>
-                                <th>Status</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="transactionsList">
-                            <tr>
-                                <td colspan="7" class="text-center">Loading transactions...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="sub-tabs">
+                <button class="sub-tab-btn active" data-subtab="deposits">Deposits</button>
+                <button class="sub-tab-btn" data-subtab="withdrawals">Withdrawals</button>
+            </div>
+            
+            <!-- Deposits Sub-tab -->
+            <div id="depositsTab" class="sub-tab-content active">
+                <div class="card">
+                    <h3 class="form-section-title"><i class="fas fa-money-bill-wave"></i> Deposit Requests</h3>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="depositsList">
+                                <tr>
+                                    <td colspan="7" class="text-center">Loading deposits...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Withdrawals Sub-tab -->
+            <div id="withdrawalsTab" class="sub-tab-content">
+                <div class="card">
+                    <h3 class="form-section-title"><i class="fas fa-money-check"></i> Withdrawal Requests</h3>
+                    
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Transaction ID</th>
+                                    <th>User</th>
+                                    <th>Amount</th>
+                                    <th>Mobile Number</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="withdrawalsList">
+                                <tr>
+                                    <td colspan="7" class="text-center">Loading withdrawals...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -549,6 +701,50 @@
     </div>
 </div>
 
+<!-- Tournament Detail Modal -->
+<div class="modal-backdrop" id="tournamentDetailModal">
+    <div class="modal-content" style="width: 500px;">
+        <h3 class="modal-title" id="tournamentDetailTitle">Tournament Details</h3>
+        
+        <div id="tournamentStats" class="mb-3">
+            <div class="row">
+                <div class="col-6">
+                    <div class="stats-card">
+                        <div class="stats-number" id="totalPlayers">0</div>
+                        <div class="stats-label">Total Players</div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="stats-card">
+                        <div class="stats-number" id="prizePool">0</div>
+                        <div class="stats-label">Prize Pool</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h4 class="form-section-title">Select Winner</h4>
+            <div class="input-group">
+                <input type="text" id="playerSearchInput" placeholder="Search players..." class="search-input">
+            </div>
+            <div class="player-list" id="playerListContainer">
+                <div class="text-center">Loading players...</div>
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h4 class="form-section-title">Recent Activity</h4>
+            <div class="activity-log" id="activityLogContainer">
+                <div class="text-center">No activity yet</div>
+            </div>
+        </div>
+        
+        <button id="setWinnerBtn" class="btn btn-success w-100 mt-3"><i class="fas fa-trophy"></i> Set as Winner</button>
+        <button class="btn w-100 mt-2" id="closeTournamentDetailModal">Close</button>
+    </div>
+</div>
+
 <!-- Player Edit Modal -->
 <div class="modal-backdrop" id="playerModal">
     <div class="modal-content">
@@ -616,14 +812,19 @@ const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const tabButtons = document.querySelectorAll('.tab-btn');
 const tabContents = document.querySelectorAll('.tab-content');
+const subTabButtons = document.querySelectorAll('.sub-tab-btn');
+const subTabContents = document.querySelectorAll('.sub-tab-content');
 const playerSearch = document.getElementById('playerSearch');
 const playersList = document.getElementById('playersList');
 const tournamentsList = document.getElementById('tournamentsList');
-const transactionsList = document.getElementById('transactionsList');
+const depositsList = document.getElementById('depositsList');
+const withdrawalsList = document.getElementById('withdrawalsList');
 const announcementsList = document.getElementById('announcementsList');
 const addTournamentBtn = document.getElementById('addTournamentBtn');
 const tournamentModal = document.getElementById('tournamentModal');
+const tournamentDetailModal = document.getElementById('tournamentDetailModal');
 const closeTournamentModal = document.getElementById('closeTournamentModal');
+const closeTournamentDetailModal = document.getElementById('closeTournamentDetailModal');
 const saveTournamentBtn = document.getElementById('saveTournamentBtn');
 const uploadImageBtn = document.getElementById('uploadImageBtn');
 const tournamentImageInput = document.getElementById('tournamentImage');
@@ -635,10 +836,18 @@ const savePlayerBtn = document.getElementById('savePlayerBtn');
 const announcementTitle = document.getElementById('announcementTitle');
 const announcementContent = document.getElementById('announcementContent');
 const sendAnnouncementBtn = document.getElementById('sendAnnouncementBtn');
+const playerSearchInput = document.getElementById('playerSearchInput');
+const playerListContainer = document.getElementById('playerListContainer');
+const activityLogContainer = document.getElementById('activityLogContainer');
+const setWinnerBtn = document.getElementById('setWinnerBtn');
+const totalPlayersEl = document.getElementById('totalPlayers');
+const prizePoolEl = document.getElementById('prizePool');
 
 // Current editing IDs
 let currentTournamentId = null;
 let currentPlayerId = null;
+let currentSelectedPlayerId = null;
+let tournamentPlayers = [];
 
 // Tab Navigation
 tabButtons.forEach(button => {
@@ -655,6 +864,21 @@ tabButtons.forEach(button => {
     });
 });
 
+// Sub Tab Navigation
+subTabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const subtabId = button.getAttribute('data-subtab');
+        
+        // Update active subtab button
+        subTabButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Show corresponding subtab content
+        subTabContents.forEach(content => content.classList.remove('active'));
+        document.getElementById(`${subtabId}Tab`).classList.add('active');
+    });
+});
+
 // Login Functionality
 loginBtn.addEventListener('click', () => {
     const password = adminPasswordInput.value;
@@ -663,6 +887,7 @@ loginBtn.addEventListener('click', () => {
         loginPage.classList.add('hidden');
         adminPanel.classList.remove('hidden');
         loadAllData();
+        localStorage.setItem('adminLoggedIn', 'true');
     } else {
         alert('Invalid admin password');
     }
@@ -673,13 +898,15 @@ logoutBtn.addEventListener('click', () => {
     adminPanel.classList.add('hidden');
     loginPage.classList.remove('hidden');
     adminPasswordInput.value = '';
+    localStorage.removeItem('adminLoggedIn');
 });
 
 // Load all data for admin panel
 function loadAllData() {
     loadPlayers();
     loadTournaments();
-    loadTransactions();
+    loadDeposits();
+    loadWithdrawals();
     loadAnnouncements();
 }
 
@@ -786,6 +1013,7 @@ function loadTournaments() {
             snapshot.forEach(child => {
                 const tournament = child.val();
                 const playerCount = tournament.players ? Object.keys(tournament.players).length : 0;
+                const winnerName = tournament.winner ? tournament.winner.name : 'Not set';
                 
                 tournamentsList.innerHTML += `
                     <tr>
@@ -794,7 +1022,9 @@ function loadTournaments() {
                         <td>${tournament.entryFee || 0}</td>
                         <td>${tournament.prizePool || 0}</td>
                         <td>${playerCount}/${tournament.maxPlayers || 50}</td>
+                        <td>${winnerName}</td>
                         <td class="action-buttons">
+                            <button class="btn btn-sm btn-info" onclick="viewTournament('${child.key}')"><i class="fas fa-eye"></i></button>
                             <button class="btn btn-sm btn-info" onclick="editTournament('${child.key}')"><i class="fas fa-edit"></i></button>
                             <button class="btn btn-sm btn-danger" onclick="deleteTournament('${child.key}')"><i class="fas fa-trash"></i></button>
                         </td>
@@ -802,10 +1032,165 @@ function loadTournaments() {
                 `;
             });
         } else {
-            tournamentsList.innerHTML = '<tr><td colspan="6" class="text-center">No tournaments found</td></tr>';
+            tournamentsList.innerHTML = '<tr><td colspan="7" class="text-center">No tournaments found</td></tr>';
         }
     });
 }
+
+// View tournament details
+function viewTournament(tournamentId) {
+    currentTournamentId = tournamentId;
+    
+    db.ref('tournaments/' + tournamentId).once('value').then(snapshot => {
+        const tournament = snapshot.val();
+        document.getElementById('tournamentDetailTitle').textContent = tournament.title || 'Tournament Details';
+        prizePoolEl.textContent = tournament.prizePool || 0;
+        
+        // Load players
+        loadTournamentPlayers(tournamentId);
+        
+        // Load activity
+        loadTournamentActivity(tournamentId);
+        
+        tournamentDetailModal.style.display = 'flex';
+    });
+}
+
+// Load tournament players
+function loadTournamentPlayers(tournamentId) {
+    db.ref('tournaments/' + tournamentId + '/players').once('value').then(snapshot => {
+        playerListContainer.innerHTML = '';
+        tournamentPlayers = [];
+        
+        if (snapshot.exists()) {
+            totalPlayersEl.textContent = Object.keys(snapshot.val()).length;
+            
+            snapshot.forEach(child => {
+                const player = child.val();
+                tournamentPlayers.push({
+                    id: child.key,
+                    ...player
+                });
+                
+                playerListContainer.innerHTML += `
+                    <div class="player-item" data-id="${child.key}">
+                        <div>${player.name || 'Unknown Player'}</div>
+                        <div class="text-small">UID: ${player.freeFireUID || 'N/A'}</div>
+                    </div>
+                `;
+            });
+            
+            // Add click event to player items
+            document.querySelectorAll('.player-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    document.querySelectorAll('.player-item').forEach(i => i.classList.remove('selected'));
+                    this.classList.add('selected');
+                    currentSelectedPlayerId = this.getAttribute('data-id');
+                });
+            });
+        } else {
+            totalPlayersEl.textContent = '0';
+            playerListContainer.innerHTML = '<div class="text-center">No players joined yet</div>';
+        }
+    });
+}
+
+// Load tournament activity
+function loadTournamentActivity(tournamentId) {
+    db.ref('tournamentActivity').orderByChild('tournamentId').equalTo(tournamentId).once('value').then(snapshot => {
+        activityLogContainer.innerHTML = '';
+        
+        if (snapshot.exists()) {
+            const activities = [];
+            
+            snapshot.forEach(child => {
+                activities.push({
+                    id: child.key,
+                    ...child.val()
+                });
+            });
+            
+            // Sort by timestamp (newest first)
+            activities.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Display activities
+            activities.forEach(activity => {
+                activityLogContainer.innerHTML += `
+                    <div class="activity-item">
+                        <div class="d-flex justify-content-between">
+                            <span>${activity.message}</span>
+                            <span class="badge badge-${getActivityBadgeClass(activity.type)}">${activity.type}</span>
+                        </div>
+                        <div class="text-small text-muted">${new Date(activity.timestamp).toLocaleString()}</div>
+                    </div>
+                `;
+            });
+        } else {
+            activityLogContainer.innerHTML = '<div class="text-center">No activity yet</div>';
+        }
+    });
+}
+
+// Get badge class based on activity type
+function getActivityBadgeClass(type) {
+    switch(type) {
+        case 'join': return 'info';
+        case 'win': return 'success';
+        case 'update': return 'warning';
+        default: return 'info';
+    }
+}
+
+// Set tournament winner
+setWinnerBtn.addEventListener('click', () => {
+    if (!currentSelectedPlayerId || !currentTournamentId) {
+        alert('Please select a player first');
+        return;
+    }
+    
+    const selectedPlayer = tournamentPlayers.find(p => p.id === currentSelectedPlayerId);
+    if (!selectedPlayer) return;
+    
+    // Update tournament with winner
+    db.ref('tournaments/' + currentTournamentId).update({
+        winner: {
+            id: currentSelectedPlayerId,
+            name: selectedPlayer.name,
+            freeFireUID: selectedPlayer.freeFireUID
+        }
+    })
+    .then(() => {
+        // Add activity log
+        db.ref('tournamentActivity').push({
+            tournamentId: currentTournamentId,
+            message: `${selectedPlayer.name} was declared as the winner`,
+            type: 'win',
+            timestamp: Date.now()
+        });
+        
+        alert('Winner set successfully');
+        tournamentDetailModal.style.display = 'none';
+        loadTournaments();
+    })
+    .catch(error => alert('Error: ' + error.message));
+});
+
+// Search tournament players
+playerSearchInput.addEventListener('input', debounce(function(e) {
+    const query = e.target.value.toLowerCase();
+    const items = playerListContainer.getElementsByClassName('player-item');
+    
+    for (let i = 0; i < items.length; i++) {
+        const name = items[i].getElementsByTagName('div')[0].textContent.toLowerCase();
+        const uid = items[i].getElementsByTagName('div')[1].textContent.toLowerCase();
+        
+        if (name.includes(query) || uid.includes(query)) {
+            items[i].style.display = 'block';
+        } else {
+            items[i].style.display = 'none';
+        }
+    }
+}, 300));
 
 // Add tournament modal
 addTournamentBtn.addEventListener('click', () => {
@@ -900,7 +1285,8 @@ saveTournamentBtn.addEventListener('click', () => {
         maxPlayers,
         rules,
         endTime,
-        image
+        image,
+        createdAt: Date.now()
     };
     
     if (currentTournamentId) {
@@ -969,47 +1355,47 @@ function deleteTournament(tournamentId) {
     }
 }
 
-// Load transactions
-function loadTransactions() {
-    db.ref('paymentRequests').orderByChild('timestamp').on('value', snapshot => {
-        transactionsList.innerHTML = '';
+// Load deposits
+function loadDeposits() {
+    db.ref('paymentRequests').orderByChild('type').equalTo('deposit').on('value', snapshot => {
+        depositsList.innerHTML = '';
         
         if (snapshot.exists()) {
-            const transactions = [];
+            const deposits = [];
             
             snapshot.forEach(child => {
-                transactions.push({
+                deposits.push({
                     id: child.key,
                     ...child.val()
                 });
             });
             
             // Sort by timestamp (newest first)
-            transactions.sort((a, b) => b.timestamp - a.timestamp);
+            deposits.sort((a, b) => b.timestamp - a.timestamp);
             
-            // Process each transaction
-            transactions.forEach(transaction => {
+            // Process each deposit
+            deposits.forEach(deposit => {
                 // Get user name
                 let userName = 'Unknown User';
-                const userPromise = db.ref('users/' + transaction.userId).once('value')
+                const userPromise = db.ref('users/' + deposit.userId).once('value')
                     .then(userSnapshot => {
                         if (userSnapshot.exists()) {
                             const user = userSnapshot.val();
                             userName = user.name || 'Unknown User';
                         }
                         
-                        transactionsList.innerHTML += `
+                        depositsList.innerHTML += `
                             <tr>
+                                <td>${deposit.id.substring(0, 8)}...</td>
                                 <td>${userName}</td>
-                                <td>${transaction.type}</td>
-                                <td>${transaction.amount}</td>
-                                <td>${transaction.method}</td>
-                                <td class="status-${transaction.status}">${transaction.status}</td>
-                                <td>${new Date(transaction.timestamp).toLocaleDateString()}</td>
+                                <td>${deposit.amount}</td>
+                                <td>${deposit.method}</td>
+                                <td class="status-${deposit.status}">${deposit.status}</td>
+                                <td>${new Date(deposit.timestamp).toLocaleDateString()}</td>
                                 <td class="action-buttons">
-                                    ${transaction.status === 'pending' ? `
-                                        <button class="btn btn-sm btn-success" onclick="updateTransactionStatus('${transaction.id}', 'approved')"><i class="fas fa-check"></i></button>
-                                        <button class="btn btn-sm btn-danger" onclick="updateTransactionStatus('${transaction.id}', 'rejected')"><i class="fas fa-times"></i></button>
+                                    ${deposit.status === 'pending' ? `
+                                        <button class="btn btn-sm btn-success" onclick="updateTransactionStatus('${deposit.id}', 'approved', 'deposit')"><i class="fas fa-check"></i></button>
+                                        <button class="btn btn-sm btn-danger" onclick="updateTransactionStatus('${deposit.id}', 'rejected', 'deposit')"><i class="fas fa-times"></i></button>
                                     ` : ''}
                                 </td>
                             </tr>
@@ -1017,21 +1403,81 @@ function loadTransactions() {
                     });
             });
         } else {
-            transactionsList.innerHTML = '<tr><td colspan="7" class="text-center">No transactions found</td></tr>';
+            depositsList.innerHTML = '<tr><td colspan="7" class="text-center">No deposit requests found</td></tr>';
+        }
+    });
+}
+
+// Load withdrawals
+function loadWithdrawals() {
+    db.ref('paymentRequests').orderByChild('type').equalTo('withdraw').on('value', snapshot => {
+        withdrawalsList.innerHTML = '';
+        
+        if (snapshot.exists()) {
+            const withdrawals = [];
+            
+            snapshot.forEach(child => {
+                withdrawals.push({
+                    id: child.key,
+                    ...child.val()
+                });
+            });
+            
+            // Sort by timestamp (newest first)
+            withdrawals.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Process each withdrawal
+            withdrawals.forEach(withdrawal => {
+                // Get user name
+                let userName = 'Unknown User';
+                const userPromise = db.ref('users/' + withdrawal.userId).once('value')
+                    .then(userSnapshot => {
+                        if (userSnapshot.exists()) {
+                            const user = userSnapshot.val();
+                            userName = user.name || 'Unknown User';
+                        }
+                        
+                        withdrawalsList.innerHTML += `
+                            <tr>
+                                <td>${withdrawal.id.substring(0, 8)}...</td>
+                                <td>${userName}</td>
+                                <td>${withdrawal.amount}</td>
+                                <td>${withdrawal.mobileNumber || 'N/A'}</td>
+                                <td class="status-${withdrawal.status}">${withdrawal.status}</td>
+                                <td>${new Date(withdrawal.timestamp).toLocaleDateString()}</td>
+                                <td class="action-buttons">
+                                    ${withdrawal.status === 'pending' ? `
+                                        <button class="btn btn-sm btn-success" onclick="updateTransactionStatus('${withdrawal.id}', 'approved', 'withdraw')"><i class="fas fa-check"></i></button>
+                                        <button class="btn btn-sm btn-danger" onclick="updateTransactionStatus('${withdrawal.id}', 'rejected', 'withdraw')"><i class="fas fa-times"></i></button>
+                                    ` : ''}
+                                </td>
+                            </tr>
+                        `;
+                    });
+            });
+        } else {
+            withdrawalsList.innerHTML = '<tr><td colspan="7" class="text-center">No withdrawal requests found</td></tr>';
         }
     });
 }
 
 // Update transaction status
-function updateTransactionStatus(transactionId, status) {
+function updateTransactionStatus(transactionId, status, type) {
     db.ref('paymentRequests/' + transactionId).once('value').then(snapshot => {
         const transaction = snapshot.val();
         
-        if (status === 'approved' && transaction.type === 'deposit') {
-            // Add coins to user account for approved deposits
-            db.ref('users/' + transaction.userId + '/coins').transaction(currentCoins => {
-                return (currentCoins || 0) + transaction.amount;
-            });
+        if (status === 'approved') {
+            if (type === 'deposit') {
+                // Add coins to user account for approved deposits
+                db.ref('users/' + transaction.userId + '/coins').transaction(currentCoins => {
+                    return (currentCoins || 0) + transaction.amount;
+                });
+            } else if (type === 'withdraw') {
+                // Deduct coins from user account for approved withdrawals
+                db.ref('users/' + transaction.userId + '/coins').transaction(currentCoins => {
+                    return Math.max(0, (currentCoins || 0) - transaction.amount);
+                });
+            }
         }
         
         // Update transaction status
@@ -1067,7 +1513,7 @@ function loadAnnouncements() {
                 announcementsList.innerHTML += `
                     <tr>
                         <td>${announcement.title}</td>
-                        <td>${announcement.content}</td>
+                        <td>${announcement.content.substring(0, 50)}${announcement.content.length > 50 ? '...' : ''}</td>
                         <td>${new Date(announcement.timestamp).toLocaleDateString()}</td>
                         <td class="action-buttons">
                             <button class="btn btn-sm btn-danger" onclick="deleteAnnouncement('${announcement.id}')"><i class="fas fa-trash"></i></button>
@@ -1120,6 +1566,10 @@ closeTournamentModal.addEventListener('click', () => {
     tournamentModal.style.display = 'none';
 });
 
+closeTournamentDetailModal.addEventListener('click', () => {
+    tournamentDetailModal.style.display = 'none';
+});
+
 closePlayerModal.addEventListener('click', () => {
     playerModal.style.display = 'none';
 });
@@ -1146,15 +1596,6 @@ window.addEventListener('load', () => {
         adminPanel.classList.remove('hidden');
         loadAllData();
     }
-});
-
-// Save login state
-loginBtn.addEventListener('click', () => {
-    localStorage.setItem('adminLoggedIn', 'true');
-});
-
-logoutBtn.addEventListener('click', () => {
-    localStorage.removeItem('adminLoggedIn');
 });
 </script>
 </body>
