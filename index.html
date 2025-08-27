@@ -846,6 +846,101 @@ body {
 .tab-content.active {
   display: block;
 }
+
+.admin-activity-log {
+  margin-top: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.activity-item {
+  padding: 8px;
+  border-bottom: 1px solid #334155;
+  font-size: 14px;
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-admin {
+  color: var(--admin);
+  font-weight: 600;
+}
+
+.activity-action {
+  color: var(--primary);
+}
+
+.activity-target {
+  color: var(--info);
+}
+
+.activity-time {
+  color: var(--text-secondary);
+  font-size: 12px;
+  display: block;
+}
+
+.balance-control {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.balance-control input {
+  flex: 1;
+}
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 15px 20px;
+  border-radius: 8px;
+  background: var(--dark-light);
+  color: var(--text);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.notification.show {
+  transform: translateX(0);
+}
+
+.notification.success {
+  border-left: 4px solid var(--success);
+}
+
+.notification.error {
+  border-left: 4px solid var(--danger);
+}
+
+.notification.info {
+  border-left: 4px solid var(--info);
+}
+
+.loading-spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  border-top-color: var(--primary);
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 </style>
 </head>
 <body>
@@ -901,6 +996,8 @@ body {
         <button class="tab-btn" data-tab="tournaments">Tournaments</button>
         <button class="tab-btn" data-tab="deposits">Deposits</button>
         <button class="tab-btn" data-tab="withdrawals">Withdrawals</button>
+        <button class="tab-btn" data-tab="announcements">Announcements</button>
+        <button class="tab-btn" data-tab="activity">Activity Log</button>
       </div>
 
       <!-- Players Tab -->
@@ -991,6 +1088,7 @@ body {
               <option value="all">All Tournaments</option>
               <option value="active">Active Only</option>
               <option value="completed">Completed Only</option>
+              <option value="upcoming">Upcoming Only</option>
             </select>
           </div>
           
@@ -1003,12 +1101,13 @@ body {
                   <th>Entry Fee</th>
                   <th>Players</th>
                   <th>Organizer</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="tournamentsList">
                 <tr>
-                  <td colspan="6" class="text-center py-3">Loading tournaments...</td>
+                  <td colspan="7" class="text-center py-3">Loading tournaments...</td>
                 </tr>
               </tbody>
             </table>
@@ -1085,6 +1184,46 @@ body {
           </div>
         </div>
       </div>
+
+      <!-- Announcements Tab -->
+      <div id="announcementsTab" class="tab-content">
+        <div class="card">
+          <div class="admin-controls">
+            <button class="btn btn-success" onclick="showCreateAnnouncementModal()">
+              <i class="fas fa-plus"></i> Create Announcement
+            </button>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Content</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="announcementsList">
+                <tr>
+                  <td colspan="5" class="text-center py-3">Loading announcements...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Log Tab -->
+      <div id="activityTab" class="tab-content">
+        <div class="card">
+          <h3>Admin Activity Log</h3>
+          <div class="admin-activity-log" id="adminActivityLog">
+            <div class="text-center py-3">Loading activity log...</div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1097,6 +1236,71 @@ body {
     <div class="d-flex gap-2 mt-3">
       <button class="btn btn-success flex-fill" id="modalConfirm">Confirm</button>
       <button class="btn flex-fill" id="modalCancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tournament Edit Modal -->
+<div class="modal-backdrop" id="tournamentEditModal">
+  <div class="modal-content" style="width: 500px; max-width: 90%;">
+    <h3 class="modal-title">Edit Tournament</h3>
+    <div id="tournamentEditForm"></div>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-success flex-fill" id="saveTournamentBtn">Save Changes</button>
+      <button class="btn flex-fill" onclick="document.getElementById('tournamentEditModal').style.display = 'none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Announcement Create Modal -->
+<div class="modal-backdrop" id="announcementModal">
+  <div class="modal-content" style="width: 500px; max-width: 90%;">
+    <h3 class="modal-title" id="announcementModalTitle">Create Announcement</h3>
+    <div class="input-group">
+      <label for="announcementTitle">Title</label>
+      <input type="text" id="announcementTitle" placeholder="Enter announcement title">
+    </div>
+    <div class="input-group">
+      <label for="announcementContent">Content</label>
+      <textarea id="announcementContent" rows="4" placeholder="Enter announcement content"></textarea>
+    </div>
+    <div class="input-group">
+      <label for="announcementStatus">Status</label>
+      <select id="announcementStatus">
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-success flex-fill" id="saveAnnouncementBtn">Save Announcement</button>
+      <button class="btn flex-fill" onclick="document.getElementById('announcementModal').style.display = 'none'">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Balance Edit Modal -->
+<div class="modal-backdrop" id="balanceModal">
+  <div class="modal-content" style="width: 400px; max-width: 90%;">
+    <h3 class="modal-title" id="balanceModalTitle">Adjust User Balance</h3>
+    <div class="input-group">
+      <label for="balanceAmount">Amount (BDT)</label>
+      <input type="number" id="balanceAmount" placeholder="Enter amount">
+    </div>
+    <div class="input-group">
+      <label for="balanceAction">Action</label>
+      <select id="balanceAction">
+        <option value="add">Add Balance</option>
+        <option value="subtract">Subtract Balance</option>
+        <option value="set">Set Balance</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <label for="balanceReason">Reason</label>
+      <input type="text" id="balanceReason" placeholder="Enter reason for adjustment">
+    </div>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-success flex-fill" id="saveBalanceBtn">Save Changes</button>
+      <button class="btn flex-fill" onclick="document.getElementById('balanceModal').style.display = 'none'">Cancel</button>
     </div>
   </div>
 </div>
@@ -1120,6 +1324,50 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const ADMIN_PASSWORD = "swampod321";
+let currentAdminId = "admin_" + Date.now();
+let currentUserIdForBalance = null;
+
+// Show notification function
+function showNotification(message, type = "info") {
+  const notification = document.createElement("div");
+  notification.className = `notification ${type}`;
+  notification.innerHTML = `
+    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+    <span>${message}</span>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.classList.add("show");
+  }, 100);
+  
+  setTimeout(() => {
+    notification.classList.remove("show");
+    setTimeout(() => {
+      document.body.removeChild(notification);
+    }, 300);
+  }, 3000);
+}
+
+// Log admin activity
+function logAdminActivity(action, target, details = "") {
+  const activity = {
+    admin: "Admin User",
+    action,
+    target,
+    details,
+    timestamp: Date.now()
+  };
+  
+  db.ref("adminActivities").push(activity)
+    .then(() => {
+      console.log("Activity logged");
+    })
+    .catch(error => {
+      console.error("Error logging activity:", error);
+    });
+}
 
 // Modal functionality
 const modalBg = document.getElementById('modalBg');
@@ -1181,12 +1429,20 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
       case 'withdrawals':
         loadWithdrawals();
         break;
+      case 'announcements':
+        loadAnnouncements();
+        break;
+      case 'activity':
+        loadActivityLog();
+        break;
     }
   });
 });
 
 // Load players
 function loadPlayers() {
+  document.getElementById('playersList').innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="loading-spinner"></div> Loading players...</td></tr>';
+  
   db.ref('users').once('value').then(snapshot => {
     let playersHTML = '';
     let playerCount = 0;
@@ -1220,14 +1476,11 @@ function loadPlayers() {
               </td>
               <td class="action-buttons">
                 ${!isBanned 
-                  ? `<button class="btn btn-sm btn-danger" onclick="banUser('${child.key}', '${user.name || 'User'}')">Ban</button>` 
-                  : `<button class="btn btn-sm btn-success" onclick="unbanUser('${child.key}', '${user.name || 'User'}')">Unban</button>`
+                  ? `<button class="btn btn-sm btn-danger" onclick="banUser('${child.key}', true)">Ban</button>` 
+                  : `<button class="btn btn-sm btn-success" onclick="banUser('${child.key}', false)">Unban</button>`
                 }
-                ${!isVerified 
-                  ? `<button class="btn btn-sm btn-info" onclick="verifyUser('${child.key}', '${user.name || 'User'}')">Verify</button>` 
-                  : `<button class="btn btn-sm btn-warning" onclick="unverifyUser('${child.key}', '${user.name || 'User'}')">Unverify</button>`
-                }
-                <button class="btn btn-sm" onclick="viewUserDetails('${child.key}')">View</button>
+                <button class="btn btn-sm btn-info" onclick="viewUserDetails('${child.key}')">View</button>
+                <button class="btn btn-sm btn-warning" onclick="showBalanceModal('${child.key}', '${user.name || 'User'}')">Balance</button>
               </td>
             </tr>
           `;
@@ -1235,17 +1488,19 @@ function loadPlayers() {
       });
     }
     
-    if (playerCount === 0) {
-      playersHTML = '<tr><td colspan="5" class="text-center py-3">No players found</td></tr>';
-    }
-    
-    document.getElementById('playersList').innerHTML = playersHTML;
-    document.getElementById('totalPlayers').textContent = playerCount;
+    document.getElementById('playersList').innerHTML = playersHTML || '<tr><td colspan="5" class="text-center py-3">No players found</td></tr>';
+    document.getElementById('totalPlayers').innerText = playerCount;
+  }).catch(error => {
+    console.error("Error loading players:", error);
+    document.getElementById('playersList').innerHTML = '<tr><td colspan="5" class="text-center py-3">Error loading players</td></tr>';
+    showNotification("Error loading players", "error");
   });
 }
 
 // Load organizers
 function loadOrganizers() {
+  document.getElementById('organizersList').innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="loading-spinner"></div> Loading organizers...</td></tr>';
+  
   db.ref('users').once('value').then(snapshot => {
     let organizersHTML = '';
     let organizerCount = 0;
@@ -1257,14 +1512,6 @@ function loadOrganizers() {
           organizerCount++;
           const isBanned = user.isBanned || false;
           const isVerified = user.isVerified || false;
-          
-          // Count tournaments created by this organizer
-          let tournamentCount = 0;
-          db.ref('tournaments').orderByChild('organizerId').equalTo(child.key).once('value', tournamentSnapshot => {
-            if (tournamentSnapshot.exists()) {
-              tournamentCount = tournamentSnapshot.numChildren();
-            }
-          });
           
           organizersHTML += `
             <tr>
@@ -1278,25 +1525,24 @@ function loadOrganizers() {
                 </div>
               </td>
               <td>${user.email || 'N/A'}</td>
-              <td>${tournamentCount}</td>
+              <td>${user.tournamentsCreated || 0}</td>
               <td>
                 ${isBanned 
                   ? '<span class="status-rejected">Banned</span>' 
-                  : isVerified 
-                    ? '<span class="status-approved">Verified</span>' 
-                    : '<span class="status-pending">Unverified</span>'
+                  : (isVerified ? '<span class="status-approved">Verified</span>' : '<span class="status-pending">Unverified</span>')
                 }
               </td>
               <td class="action-buttons">
-                ${!isBanned 
-                  ? `<button class="btn btn-sm btn-danger" onclick="banUser('${child.key}', '${user.name || 'User'}')">Ban</button>` 
-                  : `<button class="btn btn-sm btn-success" onclick="unbanUser('${child.key}', '${user.name || 'User'}')">Unban</button>`
-                }
                 ${!isVerified 
-                  ? `<button class="btn btn-sm btn-info" onclick="verifyUser('${child.key}', '${user.name || 'User'}')">Verify</button>` 
-                  : `<button class="btn btn-sm btn-warning" onclick="unverifyUser('${child.key}', '${user.name || 'User'}')">Unverify</button>`
+                  ? `<button class="btn btn-sm btn-success" onclick="verifyOrganizer('${child.key}', true)">Verify</button>` 
+                  : `<button class="btn btn-sm btn-warning" onclick="verifyOrganizer('${child.key}', false)">Unverify</button>`
                 }
-                <button class="btn btn-sm" onclick="viewUserDetails('${child.key}')">View</button>
+                ${!isBanned 
+                  ? `<button class="btn btn-sm btn-danger" onclick="banUser('${child.key}', true)">Ban</button>` 
+                  : `<button class="btn btn-sm btn-success" onclick="banUser('${child.key}', false)">Unban</button>`
+                }
+                <button class="btn btn-sm btn-info" onclick="viewUserDetails('${child.key}')">View</button>
+                <button class="btn btn-sm btn-warning" onclick="showBalanceModal('${child.key}', '${user.name || 'User'}')">Balance</button>
               </td>
             </tr>
           `;
@@ -1304,448 +1550,870 @@ function loadOrganizers() {
       });
     }
     
-    if (organizerCount === 0) {
-      organizersHTML = '<tr><td colspan="5" class="text-center py-3">No organizers found</td></tr>';
-    }
-    
-    document.getElementById('organizersList').innerHTML = organizersHTML;
-    document.getElementById('totalOrganizers').textContent = organizerCount;
+    document.getElementById('organizersList').innerHTML = organizersHTML || '<tr><td colspan="5" class="text-center py-3">No organizers found</td></tr>';
+    document.getElementById('totalOrganizers').innerText = organizerCount;
+  }).catch(error => {
+    console.error("Error loading organizers:", error);
+    document.getElementById('organizersList').innerHTML = '<tr><td colspan="5" class="text-center py-3">Error loading organizers</td></tr>';
+    showNotification("Error loading organizers", "error");
   });
 }
 
 // Load tournaments
 function loadTournaments() {
+  document.getElementById('tournamentsList').innerHTML = '<tr><td colspan="7" class="text-center py-3"><div class="loading-spinner"></div> Loading tournaments...</td></tr>';
+  
   db.ref('tournaments').once('value').then(snapshot => {
     let tournamentsHTML = '';
     let tournamentCount = 0;
+    let activeTournamentCount = 0;
     
     if (snapshot.exists()) {
       snapshot.forEach(child => {
         const tournament = child.val();
         tournamentCount++;
         
+        const status = getTournamentStatus(tournament);
+        if (status === 'active') activeTournamentCount++;
+        
+        const statusText = status === 'active' ? 'Active' : 
+                          status === 'completed' ? 'Completed' : 'Upcoming';
+        const statusClass = status === 'active' ? 'status-approved' : 
+                           status === 'completed' ? 'status-rejected' : 'status-pending';
+        
         tournamentsHTML += `
           <tr>
-            <td>${tournament.title || 'Untitled'}</td>
+            <td>${tournament.title || 'Unknown'}</td>
             <td>${tournament.type || 'Solo'}</td>
             <td>${tournament.entryFee || 0} BDT</td>
-            <td>${tournament.joinedPlayers ? Object.keys(tournament.joinedPlayers).length : 0}/${tournament.maxPlayers || 100}</td>
+            <td>${tournament.players ? Object.keys(tournament.players).length : 0}/${tournament.maxPlayers || 0}</td>
             <td>${tournament.organizerName || 'Unknown'}</td>
+            <td><span class="${statusClass}">${statusText}</span></td>
             <td class="action-buttons">
-              <button class="btn btn-sm" onclick="viewTournamentDetails('${child.key}')">View</button>
-              <button class="btn btn-sm btn-danger" onclick="deleteTournament('${child.key}', '${tournament.title || 'Tournament'}')">Delete</button>
+              <button class="btn btn-sm btn-info" onclick="viewTournamentDetails('${child.key}')">View</button>
+              <button class="btn btn-sm btn-warning" onclick="editTournament('${child.key}')">Edit</button>
+              ${status !== 'completed' 
+                ? `<button class="btn btn-sm btn-success" onclick="completeTournament('${child.key}')">Complete</button>` 
+                : ''
+              }
             </td>
           </tr>
         `;
       });
     }
     
-    if (tournamentCount === 0) {
-      tournamentsHTML = '<tr><td colspan="6" class="text-center py-3">No tournaments found</td></tr>';
-    }
-    
-    document.getElementById('tournamentsList').innerHTML = tournamentsHTML;
-    document.getElementById('totalTournaments').textContent = tournamentCount;
+    document.getElementById('tournamentsList').innerHTML = tournamentsHTML || '<tr><td colspan="7" class="text-center py-3">No tournaments found</td></tr>';
+    document.getElementById('totalTournaments').innerText = activeTournamentCount;
+  }).catch(error => {
+    console.error("Error loading tournaments:", error);
+    document.getElementById('tournamentsList').innerHTML = '<tr><td colspan="7" class="text-center py-3">Error loading tournaments</td></tr>';
+    showNotification("Error loading tournaments", "error");
   });
 }
 
 // Load deposits
 function loadDeposits() {
-  db.ref('depositRequests').once('value').then(snapshot => {
-    let depositsHTML = '';
-    
-    if (snapshot.exists()) {
-      snapshot.forEach(child => {
-        const deposit = child.val();
-        const date = new Date(deposit.timestamp);
-        
-        depositsHTML += `
-          <tr>
-            <td>${deposit.userName || 'Unknown'}</td>
-            <td>${deposit.amount || 0} BDT</td>
-            <td>${deposit.method || 'Unknown'}</td>
-            <td>${deposit.transactionId || 'N/A'}</td>
-            <td>${date.toLocaleString()}</td>
-            <td>
-              ${deposit.status === 'approved' 
-                ? '<span class="status-approved">Approved</span>' 
-                : deposit.status === 'rejected' 
-                  ? '<span class="status-rejected">Rejected</span>' 
-                  : '<span class="status-pending">Pending</span>'
-              }
-            </td>
-            <td class="action-buttons">
-              ${deposit.status === 'pending' 
-                ? `<button class="btn btn-sm btn-success" onclick="approveDeposit('${child.key}', '${deposit.userName}', ${deposit.amount})">Approve</button>
-                   <button class="btn btn-sm btn-danger" onclick="rejectDeposit('${child.key}', '${deposit.userName}')">Reject</button>` 
-                : `<button class="btn btn-sm" onclick="viewDepositDetails('${child.key}')">View</button>`
-              }
-            </td>
-          </tr>
-        `;
-      });
-    }
-    
-    if (depositsHTML === '') {
-      depositsHTML = '<tr><td colspan="7" class="text-center py-3">No deposit requests found</td></tr>';
-    }
-    
-    document.getElementById('depositsList').innerHTML = depositsHTML;
+  document.getElementById('depositsList').innerHTML = '<tr><td colspan="7" class="text-center py-3"><div class="loading-spinner"></div> Loading deposits...</td></tr>';
+  
+  // Check both possible paths for deposits
+  const depositPaths = ['deposits', 'paymentRequests'];
+  let depositsLoaded = 0;
+  let allDeposits = [];
+  
+  depositPaths.forEach(path => {
+    db.ref(path).orderByChild('timestamp').once('value').then(snapshot => {
+      if (snapshot.exists()) {
+        snapshot.forEach(child => {
+          const deposit = child.val();
+          deposit.id = child.key;
+          deposit.path = path;
+          allDeposits.push(deposit);
+        });
+      }
+      
+      depositsLoaded++;
+      
+      if (depositsLoaded === depositPaths.length) {
+        displayDeposits(allDeposits);
+      }
+    }).catch(error => {
+      console.error(`Error loading deposits from ${path}:`, error);
+      depositsLoaded++;
+      
+      if (depositsLoaded === depositPaths.length) {
+        displayDeposits(allDeposits);
+      }
+    });
   });
+}
+
+function displayDeposits(deposits) {
+  let depositsHTML = '';
+  
+  // Sort by timestamp (newest first)
+  deposits.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  
+  if (deposits.length > 0) {
+    deposits.forEach(deposit => {
+      const status = deposit.status || 'pending';
+      const statusClass = status === 'approved' ? 'status-approved' : 
+                         status === 'rejected' ? 'status-rejected' : 'status-pending';
+      
+      depositsHTML += `
+        <tr>
+          <td>${deposit.userName || deposit.name || 'Unknown'}</td>
+          <td>${deposit.amount || 0} BDT</td>
+          <td>${deposit.method || deposit.paymentMethod || 'Unknown'}</td>
+          <td>${deposit.transactionId || deposit.trxId || 'N/A'}</td>
+          <td>${formatDate(deposit.timestamp)}</td>
+          <td><span class="${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+          <td class="action-buttons">
+            ${status === 'pending' 
+              ? `
+                <button class="btn btn-sm btn-success" onclick="updateDepositStatus('${deposit.id}', 'approved', '${deposit.path}')">Approve</button>
+                <button class="btn btn-sm btn-danger" onclick="updateDepositStatus('${deposit.id}', 'rejected', '${deposit.path}')">Reject</button>
+              ` 
+              : ''
+            }
+            <button class="btn btn-sm btn-info" onclick="viewDepositDetails('${deposit.id}', '${deposit.path}')">View</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+  
+  document.getElementById('depositsList').innerHTML = depositsHTML || '<tr><td colspan="7" class="text-center py-3">No deposits found</td></tr>';
 }
 
 // Load withdrawals
 function loadWithdrawals() {
-  db.ref('withdrawalRequests').once('value').then(snapshot => {
-    let withdrawalsHTML = '';
+  document.getElementById('withdrawalsList').innerHTML = '<tr><td colspan="7" class="text-center py-3"><div class="loading-spinner"></div> Loading withdrawals...</td></tr>';
+  
+  // Check both possible paths for withdrawals
+  const withdrawalPaths = ['withdrawals', 'withdrawalRequests'];
+  let withdrawalsLoaded = 0;
+  let allWithdrawals = [];
+  
+  withdrawalPaths.forEach(path => {
+    db.ref(path).orderByChild('timestamp').once('value').then(snapshot => {
+      if (snapshot.exists()) {
+        snapshot.forEach(child => {
+          const withdrawal = child.val();
+          withdrawal.id = child.key;
+          withdrawal.path = path;
+          allWithdrawals.push(withdrawal);
+        });
+      }
+      
+      withdrawalsLoaded++;
+      
+      if (withdrawalsLoaded === withdrawalPaths.length) {
+        displayWithdrawals(allWithdrawals);
+      }
+    }).catch(error => {
+      console.error(`Error loading withdrawals from ${path}:`, error);
+      withdrawalsLoaded++;
+      
+      if (withdrawalsLoaded === withdrawalPaths.length) {
+        displayWithdrawals(allWithdrawals);
+      }
+    });
+  });
+}
+
+function displayWithdrawals(withdrawals) {
+  let withdrawalsHTML = '';
+  
+  // Sort by timestamp (newest first)
+  withdrawals.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+  
+  if (withdrawals.length > 0) {
+    withdrawals.forEach(withdrawal => {
+      const status = withdrawal.status || 'pending';
+      const statusClass = status === 'approved' ? 'status-approved' : 
+                         status === 'rejected' ? 'status-rejected' : 'status-pending';
+      
+      withdrawalsHTML += `
+        <tr>
+          <td>${withdrawal.userName || withdrawal.name || 'Unknown'}</td>
+          <td>${withdrawal.amount || 0} BDT</td>
+          <td>${withdrawal.method || withdrawal.paymentMethod || 'Unknown'}</td>
+          <td>${withdrawal.accountInfo || withdrawal.accountNumber || 'N/A'}</td>
+          <td>${formatDate(withdrawal.timestamp)}</td>
+          <td><span class="${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+          <td class="action-buttons">
+            ${status === 'pending' 
+              ? `
+                <button class="btn btn-sm btn-success" onclick="updateWithdrawalStatus('${withdrawal.id}', 'approved', '${withdrawal.path}')">Approve</button>
+                <button class="btn btn-sm btn-danger" onclick="updateWithdrawalStatus('${withdrawal.id}', 'rejected', '${withdrawal.path}')">Reject</button>
+              ` 
+              : ''
+            }
+            <button class="btn btn-sm btn-info" onclick="viewWithdrawalDetails('${withdrawal.id}', '${withdrawal.path}')">View</button>
+          </td>
+        </tr>
+      `;
+    });
+  }
+  
+  document.getElementById('withdrawalsList').innerHTML = withdrawalsHTML || '<tr><td colspan="7" class="text-center py-3">No withdrawals found</td></tr>';
+}
+
+// Load announcements
+function loadAnnouncements() {
+  document.getElementById('announcementsList').innerHTML = '<tr><td colspan="5" class="text-center py-3"><div class="loading-spinner"></div> Loading announcements...</td></tr>';
+  
+  db.ref('announcements').orderByChild('timestamp').once('value').then(snapshot => {
+    let announcementsHTML = '';
     
     if (snapshot.exists()) {
       snapshot.forEach(child => {
-        const withdrawal = child.val();
-        const date = new Date(withdrawal.timestamp);
+        const announcement = child.val();
+        const status = announcement.status || 'active';
+        const statusClass = status === 'active' ? 'status-approved' : 'status-rejected';
         
-        withdrawalsHTML += `
+        announcementsHTML += `
           <tr>
-            <td>${withdrawal.userName || 'Unknown'}</td>
-            <td>${withdrawal.amount || 0} BDT</td>
-            <td>${withdrawal.method || 'Unknown'}</td>
-            <td>${withdrawal.accountInfo || 'N/A'}</td>
-            <td>${date.toLocaleString()}</td>
-            <td>
-              ${withdrawal.status === 'approved' 
-                ? '<span class="status-approved">Approved</span>' 
-                : withdrawal.status === 'rejected' 
-                  ? '<span class="status-rejected">Rejected</span>' 
-                  : '<span class="status-pending">Pending</span>'
-              }
-            </td>
+            <td>${announcement.title || 'Untitled'}</td>
+            <td>${(announcement.content || '').substring(0, 50)}${(announcement.content || '').length > 50 ? '...' : ''}</td>
+            <td>${formatDate(announcement.timestamp)}</td>
+            <td><span class="${statusClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
             <td class="action-buttons">
-              ${withdrawal.status === 'pending' 
-                ? `<button class="btn btn-sm btn-success" onclick="approveWithdrawal('${child.key}', '${withdrawal.userName}', ${withdrawal.amount})">Approve</button>
-                   <button class="btn btn-sm btn-danger" onclick="rejectWithdrawal('${child.key}', '${withdrawal.userName}')">Reject</button>` 
-                : `<button class="btn btn-sm" onclick="viewWithdrawalDetails('${child.key}')">View</button>`
-              }
+              <button class="btn btn-sm btn-info" onclick="viewAnnouncementDetails('${child.key}')">View</button>
+              <button class="btn btn-sm btn-warning" onclick="editAnnouncement('${child.key}')">Edit</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteAnnouncement('${child.key}')">Delete</button>
             </td>
           </tr>
         `;
       });
     }
     
-    if (withdrawalsHTML === '') {
-      withdrawalsHTML = '<tr><td colspan="7" class="text-center py-3">No withdrawal requests found</td></tr>';
+    document.getElementById('announcementsList').innerHTML = announcementsHTML || '<tr><td colspan="5" class="text-center py-3">No announcements found</td></tr>';
+  }).catch(error => {
+    console.error("Error loading announcements:", error);
+    document.getElementById('announcementsList').innerHTML = '<tr><td colspan="5" class="text-center py-3">Error loading announcements</td></tr>';
+    showNotification("Error loading announcements", "error");
+  });
+}
+
+// Load activity log
+function loadActivityLog() {
+  const activityLog = document.getElementById('adminActivityLog');
+  activityLog.innerHTML = '<div class="text-center py-3"><div class="loading-spinner"></div> Loading activity log...</div>';
+  
+  db.ref('adminActivities').orderByChild('timestamp').limitToLast(50).once('value').then(snapshot => {
+    let activitiesHTML = '';
+    
+    if (snapshot.exists()) {
+      snapshot.forEach(child => {
+        const activity = child.val();
+        
+        activitiesHTML += `
+          <div class="activity-item">
+            <span class="activity-admin">${activity.admin}</span>
+            <span class="activity-action">${activity.action}</span>
+            <span class="activity-target">${activity.target}</span>
+            ${activity.details ? `<div>${activity.details}</div>` : ''}
+            <span class="activity-time">${formatDate(activity.timestamp)}</span>
+          </div>
+        `;
+      });
     }
     
-    document.getElementById('withdrawalsList').innerHTML = withdrawalsHTML;
+    activityLog.innerHTML = activitiesHTML || '<div class="text-center py-3">No activities found</div>';
+  }).catch(error => {
+    console.error("Error loading activity log:", error);
+    activityLog.innerHTML = '<div class="text-center py-3">Error loading activity log</div>';
+    showNotification("Error loading activity log", "error");
   });
+}
+
+// Helper functions
+function getTournamentStatus(tournament) {
+  const now = Date.now();
+  const startTime = tournament.startTime || 0;
+  const endTime = tournament.endTime || 0;
+  
+  if (now > endTime) return 'completed';
+  if (now > startTime && now < endTime) return 'active';
+  return 'upcoming';
+}
+
+function formatDate(timestamp) {
+  if (!timestamp) return 'N/A';
+  const date = new Date(timestamp);
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
 }
 
 // User management functions
-function banUser(userId, userName) {
-  showModal(
-    "Ban User", 
-    `Are you sure you want to ban <strong>${userName}</strong>? They will not be able to access their account.`,
-    function() {
-      db.ref('users/' + userId).update({
-        isBanned: true
-      }).then(() => {
-        alert(`${userName} has been banned successfully.`);
+function banUser(userId, ban) {
+  const action = ban ? 'ban' : 'unban';
+  const reason = prompt(`Enter reason for ${action}:`);
+  
+  if (reason !== null) {
+    db.ref(`users/${userId}/isBanned`).set(ban)
+      .then(() => {
+        showNotification(`User ${ban ? 'banned' : 'unbanned'} successfully`, "success");
+        logAdminActivity(`${ban ? 'Banned' : 'Unbanned'} user`, userId, `Reason: ${reason}`);
         loadPlayers();
         loadOrganizers();
+      })
+      .catch(error => {
+        console.error(`Error ${action}ing user:`, error);
+        showNotification(`Failed to ${action} user`, "error");
       });
-    }
-  );
+  }
 }
 
-function unbanUser(userId, userName) {
-  showModal(
-    "Unban User", 
-    `Are you sure you want to unban <strong>${userName}</strong>? They will regain access to their account.`,
-    function() {
-      db.ref('users/' + userId).update({
-        isBanned: false
-      }).then(() => {
-        alert(`${userName} has been unbanned successfully.`);
-        loadPlayers();
+function verifyOrganizer(userId, verify) {
+  db.ref(`users/${userId}/isVerified`).set(verify)
+    .then(() => {
+      showNotification(`Organizer ${verify ? 'verified' : 'unverified'} successfully`, "success");
+        logAdminActivity(`${verify ? 'Verified' : 'Unverified'} organizer`, userId);
         loadOrganizers();
+      })
+      .catch(error => {
+        console.error(`Error ${verify ? 'verifying' : 'unverifying'} organizer:`, error);
+        showNotification(`Failed to ${verify ? 'verify' : 'unverify'} organizer`, "error");
       });
-    }
-  );
-}
-
-function verifyUser(userId, userName) {
-  showModal(
-    "Verify User", 
-    `Are you sure you want to verify <strong>${userName}</strong>? They will receive a verified badge.`,
-    function() {
-      db.ref('users/' + userId).update({
-        isVerified: true
-      }).then(() => {
-        alert(`${userName} has been verified successfully.`);
-        loadPlayers();
-        loadOrganizers();
-      });
-    }
-  );
-}
-
-function unverifyUser(userId, userName) {
-  showModal(
-    "Unverify User", 
-    `Are you sure you want to remove verification from <strong>${userName}</strong>?`,
-    function() {
-      db.ref('users/' + userId).update({
-        isVerified: false
-      }).then(() => {
-        alert(`${userName}'s verification has been removed.`);
-        loadPlayers();
-        loadOrganizers();
-      });
-    }
-  );
 }
 
 function viewUserDetails(userId) {
-  db.ref('users/' + userId).once('value').then(snapshot => {
+  db.ref(`users/${userId}`).once('value').then(snapshot => {
     if (snapshot.exists()) {
       const user = snapshot.val();
-      const isBanned = user.isBanned || false;
-      const isVerified = user.isVerified || false;
-      const isOrganizer = user.isOrganizer || false;
       
-      showModal(
-        "User Details",
-        `
-          <div class="profile-header">
-            <img src="${user.profilePic || 'https://via.placeholder.com/80'}" class="profile-pic">
-            <div class="profile-info">
-              <h3 class="profile-name">${user.name || 'Unknown'} 
-                ${isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : ''}
-                ${isOrganizer ? '<span class="tournament-winner-badge">Organizer</span>' : ''}
-              </h3>
-              <p>${user.email || 'No email'}</p>
-              <p>UID: ${user.freeFireUID || 'Not set'}</p>
-            </div>
+      const userDetails = `
+        <div class="profile-header">
+          <img src="${user.profilePic || 'https://via.placeholder.com/80'}" class="profile-pic">
+          <div class="profile-info">
+            <h3 class="profile-name">${user.name || 'Unknown'}</h3>
+            <p>${user.email || 'No email'}</p>
+            <p>UID: ${user.freeFireUID || 'N/A'}</p>
           </div>
-          
-          <div class="profile-stats">
-            <div class="stat-card">
-              <div class="stat-value">${user.coins || 0}</div>
-              <div class="stat-label">Coins</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">${user.diamonds || 0}</div>
-              <div class="stat-label">Diamonds</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">${user.wins || 0}</div>
-              <div class="stat-label">Wins</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">${user.totalKills || 0}</div>
-              <div class="stat-label">Kills</div>
-            </div>
+        </div>
+        
+        <div class="profile-stats">
+          <div class="stat-card">
+            <div class="stat-value">${user.coins || 0}</div>
+            <div class="stat-label">Coins</div>
           </div>
-          
-          <div class="form-section">
-            <div class="form-section-title">Account Status</div>
-            <p>Banned: ${isBanned ? 'Yes' : 'No'}</p>
-            <p>Verified: ${isVerified ? 'Yes' : 'No'}</p>
-            <p>Organizer: ${isOrganizer ? 'Yes' : 'No'}</p>
+          <div class="stat-card">
+            <div class="stat-value">${user.diamonds || 0}</div>
+            <div class="stat-label">Diamonds</div>
           </div>
-          
-          <div class="form-section">
-            <div class="form-section-title">Account Actions</div>
-            <div class="d-flex gap-2">
-              ${!isBanned 
-                ? `<button class="btn btn-sm btn-danger" onclick="banUser('${userId}', '${user.name || 'User'}')">Ban User</button>` 
-                : `<button class="btn btn-sm btn-success" onclick="unbanUser('${userId}', '${user.name || 'User'}')">Unban User</button>`
-              }
-              ${!isVerified 
-                ? `<button class="btn btn-sm btn-info" onclick="verifyUser('${userId}', '${user.name || 'User'}')">Verify</button>` 
-                : `<button class="btn btn-sm btn-warning" onclick="unverifyUser('${userId}', '${user.name || 'User'}')">Unverify</button>`
-              }
-            </div>
+          <div class="stat-card">
+            <div class="stat-value">${user.tournamentsJoined || 0}</div>
+            <div class="stat-label">Tournaments</div>
           </div>
-        `,
-        null,
-        "Close"
-      );
+          <div class="stat-card">
+            <div class="stat-value">${user.wins || 0}</div>
+            <div class="stat-label">Wins</div>
+          </div>
+        </div>
+        
+        <div class="form-section">
+          <div class="form-section-title">Account Details</div>
+          <p><strong>Status:</strong> ${user.isBanned ? '<span class="status-rejected">Banned</span>' : '<span class="status-approved">Active</span>'}</p>
+          ${user.isOrganizer ? `<p><strong>Organizer Status:</strong> ${user.isVerified ? '<span class="status-approved">Verified</span>' : '<span class="status-pending">Unverified</span>'}</p>` : ''}
+          <p><strong>Registered:</strong> ${formatDate(user.createdAt)}</p>
+        </div>
+      `;
+      
+      showModal('User Details', userDetails, null, 'Close');
     }
   });
 }
 
+// Show balance adjustment modal
+function showBalanceModal(userId, userName) {
+  currentUserIdForBalance = userId;
+  document.getElementById('balanceModalTitle').innerText = `Adjust Balance for ${userName}`;
+  document.getElementById('balanceAmount').value = '';
+  document.getElementById('balanceAction').value = 'add';
+  document.getElementById('balanceReason').value = '';
+  
+  document.getElementById('balanceModal').style.display = 'flex';
+  
+  document.getElementById('saveBalanceBtn').onclick = function() {
+    const amount = parseInt(document.getElementById('balanceAmount').value) || 0;
+    const action = document.getElementById('balanceAction').value;
+    const reason = document.getElementById('balanceReason').value;
+    
+    if (amount <= 0) {
+      showNotification('Please enter a valid amount', 'error');
+      return;
+    }
+    
+    if (!reason) {
+      showNotification('Please enter a reason for this adjustment', 'error');
+      return;
+    }
+    
+    adjustUserBalance(userId, amount, action, reason);
+  };
+}
+
+// Adjust user balance
+function adjustUserBalance(userId, amount, action, reason) {
+  db.ref(`users/${userId}/coins`).once('value').then(snapshot => {
+    const currentBalance = snapshot.val() || 0;
+    let newBalance = currentBalance;
+    
+    if (action === 'add') {
+      newBalance = currentBalance + amount;
+    } else if (action === 'subtract') {
+      newBalance = Math.max(0, currentBalance - amount);
+    } else if (action === 'set') {
+      newBalance = amount;
+    }
+    
+    db.ref(`users/${userId}/coins`).set(newBalance)
+      .then(() => {
+        // Log the transaction
+        const transaction = {
+          userId: userId,
+          type: 'admin_adjustment',
+          amount: action === 'add' ? amount : -amount,
+          previousBalance: currentBalance,
+          newBalance: newBalance,
+          reason: reason,
+          adminId: currentAdminId,
+          timestamp: Date.now()
+        };
+        
+        db.ref('adminTransactions').push(transaction)
+          .then(() => {
+            showNotification(`Balance updated successfully. New balance: ${newBalance} BDT`, 'success');
+            logAdminActivity('Adjusted user balance', userId, `Amount: ${amount} BDT, Action: ${action}, Reason: ${reason}`);
+            document.getElementById('balanceModal').style.display = 'none';
+            loadPlayers();
+            loadOrganizers();
+          });
+      })
+      .catch(error => {
+        console.error('Error updating balance:', error);
+        showNotification('Failed to update balance', 'error');
+      });
+  });
+}
+
+// Tournament management functions
 function viewTournamentDetails(tournamentId) {
-  db.ref('tournaments/' + tournamentId).once('value').then(snapshot => {
+  db.ref(`tournaments/${tournamentId}`).once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      const tournament = snapshot.val();
+      const status = getTournamentStatus(tournament);
+      
+      let playersList = '';
+      if (tournament.players) {
+        Object.keys(tournament.players).forEach(playerId => {
+          const player = tournament.players[playerId];
+          playersList += `<li>${player.name || 'Unknown'} (${player.freeFireUID || 'N/A'})</li>`;
+        });
+      }
+      
+      const details = `
+        <div class="tournament-details">
+          <h4>${tournament.title || 'Unknown Tournament'}</h4>
+          <p><strong>Type:</strong> ${tournament.type || 'Solo'}</p>
+          <p><strong>Entry Fee:</strong> ${tournament.entryFee || 0} BDT</p>
+          <p><strong>Prize Pool:</strong> ${tournament.prizePool || 0} BDT</p>
+          <p><strong>Players:</strong> ${tournament.players ? Object.keys(tournament.players).length : 0}/${tournament.maxPlayers || 0}</p>
+          <p><strong>Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)}</p>
+          <p><strong>Start Time:</strong> ${formatDate(tournament.startTime)}</p>
+          <p><strong>End Time:</strong> ${formatDate(tournament.endTime)}</p>
+          <p><strong>Organizer:</strong> ${tournament.organizerName || 'Unknown'}</p>
+          
+          ${playersList ? `
+            <div class="form-section">
+              <div class="form-section-title">Registered Players</div>
+              <ul>${playersList}</ul>
+            </div>
+          ` : ''}
+          
+          ${tournament.winner ? `
+            <div class="winner-selection">
+              <h5>Winner: ${tournament.winner.name || 'Unknown'}</h5>
+              <p>Prize: ${tournament.winner.prize || 0} BDT</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+      
+      showModal('Tournament Details', details, null, 'Close');
+    }
+  });
+}
+
+function editTournament(tournamentId) {
+  db.ref(`tournaments/${tournamentId}`).once('value').then(snapshot => {
     if (snapshot.exists()) {
       const tournament = snapshot.val();
       
-      showModal(
-        "Tournament Details",
-        `
-          <div class="tournament-details">
-            <p><strong>Title:</strong> ${tournament.title || 'Untitled'}</p>
-            <p><strong>Type:</strong> ${tournament.type || 'Solo'}</p>
-            <p><strong>Entry Fee:</strong> ${tournament.entryFee || 0} BDT</p>
-            <p><strong>Prize Pool:</strong> ${tournament.prizePool || 0} BDT</p>
-            <p><strong>Max Players:</strong> ${tournament.maxPlayers || 100}</p>
-            <p><strong>Joined Players:</strong> ${tournament.joinedPlayers ? Object.keys(tournament.joinedPlayers).length : 0}</p>
-            <p><strong>Organizer:</strong> ${tournament.organizerName || 'Unknown'}</p>
-            <p><strong>Status:</strong> ${tournament.status || 'Upcoming'}</p>
-            <p><strong>Description:</strong> ${tournament.description || 'No description'}</p>
-          </div>
-        `,
-        null,
-        "Close"
-      );
+      const editForm = `
+        <div class="input-group">
+          <label for="editTitle">Title</label>
+          <input type="text" id="editTitle" value="${tournament.title || ''}">
+        </div>
+        
+        <div class="input-group">
+          <label for="editDescription">Description</label>
+          <textarea id="editDescription" rows="3">${tournament.description || ''}</textarea>
+        </div>
+        
+        <div class="input-group">
+          <label for="editEntryFee">Entry Fee (BDT)</label>
+          <input type="number" id="editEntryFee" value="${tournament.entryFee || 0}">
+        </div>
+        
+        <div class="input-group">
+          <label for="editPrizePool">Prize Pool (BDT)</label>
+          <input type="number" id="editPrizePool" value="${tournament.prizePool || 0}">
+        </div>
+        
+        <div class="input-group">
+          <label for="editMaxPlayers">Max Players</label>
+          <input type="number" id="editMaxPlayers" value="${tournament.maxPlayers || 0}">
+        </div>
+        
+        <div class="input-group">
+          <label for="editStartTime">Start Time</label>
+          <input type="datetime-local" id="editStartTime" value="${formatDateForInput(tournament.startTime)}">
+        </div>
+        
+        <div class="input-group">
+          <label for="editEndTime">End Time</label>
+          <input type="datetime-local" id="editEndTime" value="${formatDateForInput(tournament.endTime)}">
+        </div>
+      `;
+      
+      document.getElementById('tournamentEditForm').innerHTML = editForm;
+      document.getElementById('tournamentEditModal').style.display = 'flex';
+      
+      document.getElementById('saveTournamentBtn').onclick = function() {
+        const updates = {
+          title: document.getElementById('editTitle').value,
+          description: document.getElementById('editDescription').value,
+          entryFee: parseInt(document.getElementById('editEntryFee').value) || 0,
+          prizePool: parseInt(document.getElementById('editPrizePool').value) || 0,
+          maxPlayers: parseInt(document.getElementById('editMaxPlayers').value) || 0,
+          startTime: new Date(document.getElementById('editStartTime').value).getTime(),
+          endTime: new Date(document.getElementById('editEndTime').value).getTime()
+        };
+        
+        db.ref(`tournaments/${tournamentId}`).update(updates)
+          .then(() => {
+            showNotification('Tournament updated successfully', 'success');
+            logAdminActivity('Edited tournament', tournamentId);
+            document.getElementById('tournamentEditModal').style.display = 'none';
+            loadTournaments();
+          })
+          .catch(error => {
+            console.error('Error updating tournament:', error);
+            showNotification('Failed to update tournament', 'error');
+          });
+      };
     }
   });
 }
 
-function deleteTournament(tournamentId, tournamentName) {
-  showModal(
-    "Delete Tournament", 
-    `Are you sure you want to delete <strong>${tournamentName}</strong>? This action cannot be undone.`,
-    function() {
-      db.ref('tournaments/' + tournamentId).remove().then(() => {
-        alert(`${tournamentName} has been deleted successfully.`);
-        loadTournaments();
-      });
-    }
-  );
-}
-
-function approveDeposit(depositId, userName, amount) {
-  showModal(
-    "Approve Deposit", 
-    `Are you sure you want to approve the deposit of <strong>${amount} BDT</strong> from <strong>${userName}</strong>?`,
-    function() {
-      // Update deposit status
-      db.ref('depositRequests/' + depositId).update({
-        status: 'approved'
-      }).then(() => {
-        // Get user ID from deposit request
-        db.ref('depositRequests/' + depositId).once('value').then(snapshot => {
-          if (snapshot.exists()) {
-            const deposit = snapshot.val();
-            const userId = deposit.userId;
-            
-            // Add coins to user's account
-            db.ref('users/' + userId).once('value').then(userSnapshot => {
-              if (userSnapshot.exists()) {
-                const user = userSnapshot.val();
-                const currentCoins = user.coins || 0;
-                
-                db.ref('users/' + userId).update({
-                  coins: currentCoins + amount
-                }).then(() => {
-                  alert(`Deposit of ${amount} BDT for ${userName} has been approved.`);
-                  loadDeposits();
-                });
-              }
-            });
-          }
+function completeTournament(tournamentId) {
+  db.ref(`tournaments/${tournamentId}`).once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      const tournament = snapshot.val();
+      
+      let winnerOptions = '';
+      if (tournament.players) {
+        Object.keys(tournament.players).forEach(playerId => {
+          const player = tournament.players[playerId];
+          winnerOptions += `<option value="${playerId}">${player.name || 'Unknown Player'}</option>`;
         });
-      });
+      }
+      
+      const completeForm = `
+        <div class="input-group">
+          <label for="winnerSelect">Select Winner</label>
+          <select id="winnerSelect">
+            ${winnerOptions || '<option value="">No players registered</option>'}
+          </select>
+        </div>
+        
+        <div class="input-group">
+          <label for="prizeAmount">Prize Amount (BDT)</label>
+          <input type="number" id="prizeAmount" value="${tournament.prizePool || 0}">
+        </div>
+      `;
+      
+      showModal('Complete Tournament', completeForm, function() {
+        const winnerId = document.getElementById('winnerSelect').value;
+        const prizeAmount = parseInt(document.getElementById('prizeAmount').value) || 0;
+        
+        if (!winnerId) {
+          showNotification('Please select a winner', 'error');
+          return;
+        }
+        
+        // Get winner details
+        const winner = tournament.players[winnerId];
+        
+        // Update tournament with winner
+        db.ref(`tournaments/${tournamentId}/winner`).set({
+          id: winnerId,
+          name: winner.name,
+          prize: prizeAmount
+        }).then(() => {
+          // Update winner's balance
+          db.ref(`users/${winnerId}/coins`).transaction(currentCoins => {
+            return (currentCoins || 0) + prizeAmount;
+          }).then(() => {
+            showNotification('Tournament completed successfully. Prize distributed to winner.', 'success');
+            logAdminActivity('Completed tournament', tournamentId, `Winner: ${winner.name}, Prize: ${prizeAmount} BDT`);
+            loadTournaments();
+          });
+        }).catch(error => {
+          console.error('Error completing tournament:', error);
+          showNotification('Failed to complete tournament', 'error');
+        });
+      }, 'Complete');
     }
-  );
+  });
 }
 
-function rejectDeposit(depositId, userName) {
-  showModal(
-    "Reject Deposit", 
-    `Are you sure you want to reject the deposit request from <strong>${userName}</strong>?`,
-    function() {
-      db.ref('depositRequests/' + depositId).update({
-        status: 'rejected'
-      }).then(() => {
-        alert(`Deposit request from ${userName} has been rejected.`);
-        loadDeposits();
-      });
-    }
-  );
-}
-
-function approveWithdrawal(withdrawalId, userName, amount) {
-  showModal(
-    "Approve Withdrawal", 
-    `Are you sure you want to approve the withdrawal of <strong>${amount} BDT</strong> for <strong>${userName}</strong>?`,
-    function() {
-      db.ref('withdrawalRequests/' + withdrawalId).update({
-        status: 'approved'
-      }).then(() => {
-        alert(`Withdrawal of ${amount} BDT for ${userName} has been approved.`);
-        loadWithdrawals();
-      });
-    }
-  );
-}
-
-function rejectWithdrawal(withdrawalId, userName) {
-  showModal(
-    "Reject Withdrawal", 
-    `Are you sure you want to reject the withdrawal request from <strong>${userName}</strong>?`,
-    function() {
-      db.ref('withdrawalRequests/' + withdrawalId).update({
-        status: 'rejected'
-      }).then(() => {
-        alert(`Withdrawal request from ${userName} has been rejected.`);
-        loadWithdrawals();
-      });
-    }
-  );
-}
-
-function viewDepositDetails(depositId) {
-  db.ref('depositRequests/' + depositId).once('value').then(snapshot => {
+// Deposit/Withdrawal management functions
+function updateDepositStatus(depositId, status, path) {
+  db.ref(`${path}/${depositId}`).once('value').then(snapshot => {
     if (snapshot.exists()) {
       const deposit = snapshot.val();
-      const date = new Date(deposit.timestamp);
       
-      showModal(
-        "Deposit Details",
-        `
-          <div class="tournament-details">
-            <p><strong>User:</strong> ${deposit.userName || 'Unknown'}</p>
-            <p><strong>Amount:</strong> ${deposit.amount || 0} BDT</p>
-            <p><strong>Method:</strong> ${deposit.method || 'Unknown'}</p>
-            <p><strong>Transaction ID:</strong> ${deposit.transactionId || 'N/A'}</p>
-            <p><strong>Date:</strong> ${date.toLocaleString()}</p>
-            <p><strong>Status:</strong> ${deposit.status || 'Pending'}</p>
-          </div>
-        `,
-        null,
-        "Close"
-      );
+      db.ref(`${path}/${depositId}/status`).set(status)
+        .then(() => {
+          if (status === 'approved') {
+            // Add coins to user's account
+            db.ref(`users/${deposit.userId}/coins`).transaction(currentCoins => {
+              return (currentCoins || 0) + (deposit.amount || 0);
+            }).then(() => {
+              showNotification('Deposit approved and coins added to user account', 'success');
+              logAdminActivity('Approved deposit', depositId, `Amount: ${deposit.amount} BDT, User: ${deposit.userName}`);
+              loadDeposits();
+            });
+          } else {
+            showNotification(`Deposit ${status}`, 'success');
+            logAdminActivity(`${status === 'rejected' ? 'Rejected' : 'Updated'} deposit`, depositId);
+            loadDeposits();
+          }
+        })
+        .catch(error => {
+          console.error(`Error ${status}ing deposit:`, error);
+          showNotification(`Failed to ${status} deposit`, 'error');
+        });
     }
   });
 }
 
-function viewWithdrawalDetails(withdrawalId) {
-  db.ref('withdrawalRequests/' + withdrawalId).once('value').then(snapshot => {
+function updateWithdrawalStatus(withdrawalId, status, path = 'withdrawals') {
+  db.ref(`${path}/${withdrawalId}`).once('value').then(snapshot => {
     if (snapshot.exists()) {
       const withdrawal = snapshot.val();
-      const date = new Date(withdrawal.timestamp);
       
-      showModal(
-        "Withdrawal Details",
-        `
-          <div class="tournament-details">
-            <p><strong>User:</strong> ${withdrawal.userName || 'Unknown'}</p>
-            <p><strong>Amount:</strong> ${withdrawal.amount || 0} BDT</p>
-            <p><strong>Method:</strong> ${withdrawal.method || 'Unknown'}</p>
-            <p><strong>Account Info:</strong> ${withdrawal.accountInfo || 'N/A'}</p>
-            <p><strong>Date:</strong> ${date.toLocaleString()}</p>
-            <p><strong>Status:</strong> ${withdrawal.status || 'Pending'}</p>
-          </div>
-        `,
-        null,
-        "Close"
-      );
+      db.ref(`${path}/${withdrawalId}/status`).set(status)
+        .then(() => {
+          if (status === 'rejected') {
+            // Return coins to user's account if rejected
+            db.ref(`users/${withdrawal.userId}/coins`).transaction(currentCoins => {
+              return (currentCoins || 0) + (withdrawal.amount || 0);
+            }).then(() => {
+              showNotification('Withdrawal rejected and coins returned to user account', 'success');
+              logAdminActivity('Rejected withdrawal', withdrawalId, `Amount: ${withdrawal.amount} BDT returned to user`);
+              loadWithdrawals();
+            });
+          } else {
+            showNotification(`Withdrawal ${status}`, 'success');
+            logAdminActivity(`${status === 'approved' ? 'Approved' : 'Updated'} withdrawal`, withdrawalId);
+            loadWithdrawals();
+          }
+        })
+        .catch(error => {
+          console.error(`Error ${status}ing withdrawal:`, error);
+          showNotification(`Failed to ${status} withdrawal`, 'error');
+        });
     }
   });
 }
 
-// Login functionality
+function viewDepositDetails(depositId, path) {
+  db.ref(`${path}/${depositId}`).once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      const deposit = snapshot.val();
+      
+      const details = `
+        <div class="tournament-details">
+          <p><strong>User:</strong> ${deposit.userName || deposit.name || 'Unknown'}</p>
+          <p><strong>Amount:</strong> ${deposit.amount || 0} BDT</p>
+          <p><strong>Method:</strong> ${deposit.method || deposit.paymentMethod || 'Unknown'}</p>
+          <p><strong>Transaction ID:</strong> ${deposit.transactionId || deposit.trxId || 'N/A'}</p>
+          <p><strong>Status:</strong> ${deposit.status || 'pending'}</p>
+          <p><strong>Date:</strong> ${formatDate(deposit.timestamp)}</p>
+          ${deposit.screenshot ? `<p><strong>Screenshot:</strong> <a href="${deposit.screenshot}" target="_blank">View</a></p>` : ''}
+        </div>
+      `;
+      
+      showModal('Deposit Details', details, null, 'Close');
+    }
+  });
+}
+
+function viewWithdrawalDetails(withdrawalId, path = 'withdrawals') {
+  db.ref(`${path}/${withdrawalId}`).once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      const withdrawal = snapshot.val();
+      
+      const details = `
+        <div class="tournament-details">
+          <p><strong>User:</strong> ${withdrawal.userName || withdrawal.name || 'Unknown'}</p>
+          <p><strong>Amount:</strong> ${withdrawal.amount || 0} BDT</p>
+          <p><strong>Method:</strong> ${withdrawal.method || withdrawal.paymentMethod || 'Unknown'}</p>
+          <p><strong>Account Info:</strong> ${withdrawal.accountInfo || withdrawal.accountNumber || 'N/A'}</p>
+          <p><strong>Status:</strong> ${withdrawal.status || 'pending'}</p>
+          <p><strong>Date:</strong> ${formatDate(withdrawal.timestamp)}</p>
+        </div>
+      `;
+      
+      showModal('Withdrawal Details', details, null, 'Close');
+    }
+  });
+}
+
+// Announcement management functions
+function showCreateAnnouncementModal() {
+  document.getElementById('announcementModalTitle').innerText = 'Create Announcement';
+  document.getElementById('announcementTitle').value = '';
+  document.getElementById('announcementContent').value = '';
+  document.getElementById('announcementStatus').value = 'active';
+  
+  document.getElementById('announcementModal').style.display = 'flex';
+  
+  document.getElementById('saveAnnouncementBtn').onclick = function() {
+    const title = document.getElementById('announcementTitle').value;
+    const content = document.getElementById('announcementContent').value;
+    const status = document.getElementById('announcementStatus').value;
+    
+    if (!title || !content) {
+      showNotification('Please fill in all fields', 'error');
+      return;
+    }
+    
+    const newAnnouncement = {
+      title: title,
+      content: content,
+      status: status,
+      timestamp: Date.now()
+    };
+    
+    db.ref('announcements').push(newAnnouncement)
+      .then(() => {
+        showNotification('Announcement created successfully', 'success');
+        logAdminActivity('Created announcement', title);
+        document.getElementById('announcementModal').style.display = 'none';
+        loadAnnouncements();
+      })
+      .catch(error => {
+        console.error('Error creating announcement:', error);
+        showNotification('Failed to create announcement', 'error');
+      });
+  };
+}
+
+function editAnnouncement(announcementId) {
+  db.ref(`announcements/${announcementId}`).once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      const announcement = snapshot.val();
+      
+      document.getElementById('announcementModalTitle').innerText = 'Edit Announcement';
+      document.getElementById('announcementTitle').value = announcement.title || '';
+      document.getElementById('announcementContent').value = announcement.content || '';
+      document.getElementById('announcementStatus').value = announcement.status || 'active';
+      
+      document.getElementById('announcementModal').style.display = 'flex';
+      
+      document.getElementById('saveAnnouncementBtn').onclick = function() {
+        const title = document.getElementById('announcementTitle').value;
+        const content = document.getElementById('announcementContent').value;
+        const status = document.getElementById('announcementStatus').value;
+        
+        if (!title || !content) {
+          showNotification('Please fill in all fields', 'error');
+          return;
+        }
+        
+        const updates = {
+          title: title,
+          content: content,
+          status: status
+        };
+        
+        db.ref(`announcements/${announcementId}`).update(updates)
+          .then(() => {
+            showNotification('Announcement updated successfully', 'success');
+            logAdminActivity('Edited announcement', title);
+            document.getElementById('announcementModal').style.display = 'none';
+            loadAnnouncements();
+          })
+          .catch(error => {
+            console.error('Error updating announcement:', error);
+            showNotification('Failed to update announcement', 'error');
+          });
+      };
+    }
+  });
+}
+
+function viewAnnouncementDetails(announcementId) {
+  db.ref(`announcements/${announcementId}`).once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      const announcement = snapshot.val();
+      
+      const details = `
+        <div class="tournament-details">
+          <h4>${announcement.title || 'Untitled'}</h4>
+          <p>${announcement.content || 'No content'}</p>
+          <p><strong>Status:</strong> ${announcement.status || 'active'}</p>
+          <p><strong>Date:</strong> ${formatDate(announcement.timestamp)}</p>
+        </div>
+      `;
+      
+      showModal('Announcement Details', details, null, 'Close');
+    }
+  });
+}
+
+function deleteAnnouncement(announcementId) {
+  if (confirm('Are you sure you want to delete this announcement?')) {
+    db.ref(`announcements/${announcementId}`).once('value').then(snapshot => {
+      const announcement = snapshot.val();
+      
+      db.ref(`announcements/${announcementId}`).remove()
+        .then(() => {
+          showNotification('Announcement deleted successfully', 'success');
+          logAdminActivity('Deleted announcement', announcement.title || announcementId);
+          loadAnnouncements();
+        })
+        .catch(error => {
+          console.error('Error deleting announcement:', error);
+          showNotification('Failed to delete announcement', 'error');
+        });
+    });
+  }
+}
+
+// Helper function for datetime input
+function formatDateForInput(timestamp) {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  return date.toISOString().slice(0, 16);
+}
+
+// Admin login
 document.getElementById('adminLoginBtn').addEventListener('click', function() {
   const password = document.getElementById('adminPassword').value;
   
@@ -1753,168 +2421,28 @@ document.getElementById('adminLoginBtn').addEventListener('click', function() {
     document.getElementById('adminLoginPage').classList.add('hidden');
     document.getElementById('adminPanel').classList.remove('hidden');
     
+    // Log admin login
+    logAdminActivity('Logged in', 'Admin Panel');
+    
     // Load initial data
     loadPlayers();
-    loadOrganizers();
-    loadTournaments();
-    loadDeposits();
-    loadWithdrawals();
   } else {
-    alert('Incorrect admin password!');
+    showNotification('Incorrect admin password', 'error');
   }
 });
 
-// Logout functionality
+// Admin logout
 document.getElementById('adminLogoutBtn').addEventListener('click', function() {
+  // Log admin logout
+  logAdminActivity('Logged out', 'Admin Panel');
+  
   document.getElementById('adminLoginPage').classList.remove('hidden');
   document.getElementById('adminPanel').classList.add('hidden');
   document.getElementById('adminPassword').value = '';
 });
 
-// Set up search functionality
-document.getElementById('playerSearchInput').addEventListener('input', function() {
-  const searchTerm = this.value.toLowerCase();
-  const rows = document.querySelectorAll('#playersList tr');
-  
-  rows.forEach(row => {
-    const name = row.querySelector('td:first-child').textContent.toLowerCase();
-    const uid = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-    
-    if (name.includes(searchTerm) || uid.includes(searchTerm)) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
-  });
-});
-
-document.getElementById('organizerSearchInput').addEventListener('input', function() {
-  const searchTerm = this.value.toLowerCase();
-  const rows = document.querySelectorAll('#organizersList tr');
-  
-  rows.forEach(row => {
-    const name = row.querySelector('td:first-child').textContent.toLowerCase();
-    const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-    
-    if (name.includes(searchTerm) || email.includes(searchTerm)) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
-  });
-});
-
-document.getElementById('tournamentSearchInput').addEventListener('input', function() {
-  const searchTerm = this.value.toLowerCase();
-  const rows = document.querySelectorAll('#tournamentsList tr');
-  
-  rows.forEach(row => {
-    const title = row.querySelector('td:first-child').textContent.toLowerCase();
-    
-    if (title.includes(searchTerm)) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
-  });
-});
-
-// Set up filter functionality
-document.getElementById('playerFilter').addEventListener('change', function() {
-  const filter = this.value;
-  const rows = document.querySelectorAll('#playersList tr');
-  
-  rows.forEach(row => {
-    const status = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-    
-    if (filter === 'all' || 
-        (filter === 'verified' && row.innerHTML.includes('fa-check-circle')) ||
-        (filter === 'banned' && status.includes('banned'))) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
-  });
-});
-
-document.getElementById('organizerFilter').addEventListener('change', function() {
-  const filter = this.value;
-  const rows = document.querySelectorAll('#organizersList tr');
-  
-  rows.forEach(row => {
-    const status = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-    
-    if (filter === 'all' || 
-        (filter === 'verified' && status.includes('verified')) ||
-        (filter === 'unverified' && status.includes('unverified')) ||
-        (filter === 'banned' && status.includes('banned'))) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
-  });
-});
-
-document.getElementById('tournamentFilter').addEventListener('change', function() {
-  const filter = this.value;
-  const rows = document.querySelectorAll('#tournamentsList tr');
-  
-  // This is a simplified implementation - in a real app, you would check the actual status
-  rows.forEach(row => {
-    if (filter === 'all') {
-      row.style.display = '';
-    } else {
-      // For demo purposes, we'll just show all rows
-      row.style.display = '';
-    }
-  });
-});
-
-document.getElementById('depositFilter').addEventListener('change', function() {
-  const filter = this.value;
-  const rows = document.querySelectorAll('#depositsList tr');
-  
-  rows.forEach(row => {
-    const status = row.querySelector('td:nth-child(6)').textContent.toLowerCase();
-    
-    if (filter === 'all' || 
-        (filter === 'pending' && status.includes('pending')) ||
-        (filter === 'approved' && status.includes('approved')) ||
-        (filter === 'rejected' && status.includes('rejected'))) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
-  });
-});
-
-document.getElementById('withdrawalFilter').addEventListener('change', function() {
-  const filter = this.value;
-  const rows = document.querySelectorAll('#withdrawalsList tr');
-  
-  rows.forEach(row => {
-    const status = row.querySelector('td:nth-child(6)').textContent.toLowerCase();
-    
-    if (filter === 'all' || 
-        (filter === 'pending' && status.includes('pending')) ||
-        (filter === 'approved' && status.includes('approved')) ||
-        (filter === 'rejected' && status.includes('rejected'))) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
-  });
-});
-
-// Initialize with sample data for demonstration
-function initializeSampleData() {
-  // This function would normally be called to set up initial data
-  // For this demo, we'll just simulate data loading
-  document.getElementById('totalRevenue').textContent = "1,250";
-}
-
-// Initialize the app
-initializeSampleData();
+// Initialize with players tab
+loadPlayers();
 </script>
 </body>
 </html>
